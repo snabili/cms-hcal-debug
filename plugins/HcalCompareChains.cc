@@ -276,8 +276,6 @@ HcalCompareChains::analyze(const edm::Event& event, const edm::EventSetup& setup
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
       ev_tp_energy_ += decoder->hcaletValue(id.ieta(), id.iphi(), digi.SOI_compressedEt());
-         std::cout << digi.SOI_compressedEt() << std::endl;
-         std::cout << decoder->hcaletValue(id.ieta(), id.iphi(), digi.SOI_compressedEt()) << std::endl;
       tpdigis[id].push_back(digi);
 
       tp_energy_ = decoder->hcaletValue(id.ieta(), id.iphi(), digi.SOI_compressedEt());
