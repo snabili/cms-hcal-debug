@@ -129,7 +129,7 @@ LinearizedTPProducer::produce(edm::Event& event, const edm::EventSetup& setup)
       for (const auto& level: digi.getDepthData())
          total += level;
       for (const auto& level: digi.getDepthData())
-         lin.summed_energies.push_back(soi * level / float(total));
+         lin.summed_energies.push_back(total > 0 ? soi * level / float(total) : 0);
 
       lin.rising_times = digi.getRisingAvg();
       lin.falling_times = digi.getFallingAvg();
