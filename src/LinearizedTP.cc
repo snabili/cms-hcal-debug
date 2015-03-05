@@ -5,5 +5,3 @@ LinearizedTP::LinearizedTP(const HcalUpgradeTriggerPrimitiveDigi& d) :
    iphi(d.id().iphi())
 {
 }
-
-/* ClassImp(LinearizedTP); */

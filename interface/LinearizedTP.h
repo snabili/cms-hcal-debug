@@ -6,8 +6,6 @@
 #include "DataFormats/HcalDetId/interface/HcalTrigTowerDetId.h"
 #include "DataFormats/HcalDigi/interface/HcalUpgradeTriggerPrimitiveDigi.h"
 
-/* #include "TObject.h" */
-
 class LinearizedTP {
    public:
       LinearizedTP() {};
@@ -22,8 +20,6 @@ class LinearizedTP {
 
       std::vector<double> rising_times;
       std::vector<double> falling_times;
-
-      /* ClassDef(LinearizedTP, 1); */
 };
 
 #endif
