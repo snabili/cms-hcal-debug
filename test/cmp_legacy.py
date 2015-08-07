@@ -30,7 +30,7 @@ process.load('Configuration.StandardSequences.Digi_cff')
 # process.GlobalTag = alcaGlobalTag(process.GlobalTag,
         # globaltag=tag, conditions=l1cond)
 
-process.chainplotter = cms.EDAnalyzer("HcalCompareChains",
+process.chainplotter = cms.EDAnalyzer("HcalCompareLegacyChains",
         TriggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
         RecHits = cms.InputTag('hbhereco'),
         DataFrames = cms.VInputTag(
