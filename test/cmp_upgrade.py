@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 # vim: foldmethod=marker foldlevel=0
-import sys
-
-if sys.argv[0] == 'cmsRun':
-    sys.argv.pop(0)
-infile, outfile = sys.argv[1:]
 
 import FWCore.ParameterSet.Config as cms
 
@@ -98,10 +93,10 @@ process.schedule = cms.Schedule(process.p)
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
-        fileName = cms.string(outfile))
+        fileName = cms.string('upgrade.root'))
 
-ifile = infile
-if not ifile.startswith("/store/"):
-    ifile = 'file:' + ifile
 process.source = cms.Source('PoolSource',
-        fileNames = cms.untracked.vstring(ifile))
+        fileNames =
+        cms.untracked.vstring('file:10239_TTbar_14TeV+TTbar_Tauola_14TeV_2019_GenSimFull+DigiFull_2019+RecoFull_2019+HARVESTFull_2019/step3.root'),
+        secondaryFileNames =
+        cms.untracked.vstring('file:10239_TTbar_14TeV+TTbar_Tauola_14TeV_2019_GenSimFull+DigiFull_2019+RecoFull_2019+HARVESTFull_2019/step2.root'))

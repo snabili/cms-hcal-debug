@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HcalCompareChains
-// Class:      HcalCompareChains
+// Package:    HcalCompareUpgradeChains
+// Class:      HcalCompareUpgradeChains
 // 
-/**\class HcalCompareChains HcalCompareChains.cc HcalDebug/CompareChans/src/HcalCompareChains.cc
+/**\class HcalCompareUpgradeChains HcalCompareUpgradeChains.cc HcalDebug/CompareChans/src/HcalCompareUpgradeChains.cc
 
  Description: [one line class summary]
 
@@ -73,10 +73,10 @@
 // class declaration
 //
 
-class HcalCompareChains : public edm::EDAnalyzer {
+class HcalCompareUpgradeChains : public edm::EDAnalyzer {
    public:
-      explicit HcalCompareChains(const edm::ParameterSet&);
-      ~HcalCompareChains();
+      explicit HcalCompareUpgradeChains(const edm::ParameterSet&);
+      ~HcalCompareUpgradeChains();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -128,7 +128,7 @@ class HcalCompareChains : public edm::EDAnalyzer {
       int mt_iphi_;
 };
 
-HcalCompareChains::HcalCompareChains(const edm::ParameterSet& config) :
+HcalCompareUpgradeChains::HcalCompareUpgradeChains(const edm::ParameterSet& config) :
    edm::EDAnalyzer(),
    first_(true),
    frames_(config.getParameter<std::vector<edm::InputTag>>("DataFrames")),
@@ -173,10 +173,10 @@ HcalCompareChains::HcalCompareChains(const edm::ParameterSet& config) :
    matches_->Branch("iphi", &mt_iphi_);
 }
 
-HcalCompareChains::~HcalCompareChains() {}
+HcalCompareUpgradeChains::~HcalCompareUpgradeChains() {}
 
 void
-HcalCompareChains::analyze(const edm::Event& event, const edm::EventSetup& setup)
+HcalCompareUpgradeChains::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
    using namespace edm;
 
@@ -242,7 +242,7 @@ HcalCompareChains::analyze(const edm::Event& event, const edm::EventSetup& setup
 
    edm::Handle< edm::SortedCollection<HBHERecHit> > hits;
    if (!event.getByLabel(rechits_, hits)) {
-      edm::LogError("HcalCompareChains") <<
+      edm::LogError("HcalCompareUpgradeChains") <<
          "Can't find rec hit collection with tag '" << rechits_ << "'" << std::endl;
       /* return; */
    }
@@ -365,7 +365,7 @@ HcalCompareChains::analyze(const edm::Event& event, const edm::EventSetup& setup
 }
 
 void
-HcalCompareChains::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+HcalCompareUpgradeChains::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -374,4 +374,4 @@ HcalCompareChains::fillDescriptions(edm::ConfigurationDescriptions& descriptions
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(HcalCompareChains);
+DEFINE_FWK_MODULE(HcalCompareUpgradeChains);
