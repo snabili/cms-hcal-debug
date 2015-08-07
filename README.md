@@ -2,7 +2,12 @@
 
 Install with:
 
-    git clone git@github.com:matz-e/cms-hcal-debug.git Debug/…
-    scram b -j …
+    git clone git@github.com:matz-e/cms-hcal-debug.git Debug/HcalCompareDigis
+    scram b -j 8
 
-with any convenient name inserted.
+# Running
+
+Run with:
+
+    runTheMatrix.py -w upgrade -l 10039
+    cmsRun Debug/HcalCompareChains/test/cmp_legacy.py
