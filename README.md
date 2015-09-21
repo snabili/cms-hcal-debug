@@ -2,7 +2,7 @@
 
 Install with:
 
-    git clone git@github.com:matz-e/cms-hcal-debug.git Debug/HcalCompareDigis
+    git clone git@github.com:matz-e/cms-hcal-debug.git Debug/HcalCompareChains
     scram b -j 8
 
 # Running
