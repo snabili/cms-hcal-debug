@@ -268,6 +268,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
+            tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1);
             rhits[tower_id].push_back(hit);
          }
       }
