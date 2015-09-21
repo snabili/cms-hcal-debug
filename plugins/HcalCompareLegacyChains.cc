@@ -192,32 +192,34 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    Handle<HBHEDigiCollection> frames;
    Handle<HFDigiCollection> hfframes;
-   if (first_ && event.getByLabel(frames_[0], frames) && event.getByLabel(frames_[1], hfframes)) {
-      std::set<HcalTrigTowerDetId> ids;
+   if (frames_.size() == 2) {
+      if (first_ && event.getByLabel(frames_[0], frames) && event.getByLabel(frames_[1], hfframes)) {
+         std::set<HcalTrigTowerDetId> ids;
 
-      for (const auto& frame: *(frames.product())) {
-         auto mapped = tpd_geo_h->towerIds(frame.id());
+         for (const auto& frame: *(frames.product())) {
+            auto mapped = tpd_geo_h->towerIds(frame.id());
 
-         for (const auto& id: mapped) {
-            df_multiplicity_->Fill(id.ieta(), id.iphi());
-            ids.insert(id);
+            for (const auto& id: mapped) {
+               df_multiplicity_->Fill(id.ieta(), id.iphi());
+               ids.insert(id);
+            }
          }
-      }
 
-      for (const auto& frame: *(hfframes.product())) {
-         auto mapped = tpd_geo_h->towerIds(frame.id());
+         for (const auto& frame: *(hfframes.product())) {
+            auto mapped = tpd_geo_h->towerIds(frame.id());
 
-         for (const auto& id: mapped) {
-            df_multiplicity_->Fill(id.ieta(), id.iphi());
-            ids.insert(id);
+            for (const auto& id: mapped) {
+               df_multiplicity_->Fill(id.ieta(), id.iphi());
+               ids.insert(id);
+            }
          }
-      }
 
-      for (const auto& id: ids) {
-         tp_multiplicity_->Fill(id.ieta(), id.iphi());
-      }
+         for (const auto& id: ids) {
+            tp_multiplicity_->Fill(id.ieta(), id.iphi());
+         }
 
-      first_ = false;
+         first_ = false;
+      }
    }
 
    // ==============
@@ -277,7 +279,6 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    ESHandle<CaloTPGTranscoder> decoder;
    setup.get<CaloTPGRecord>().get(decoder);
-   decoder->setup(setup, CaloTPGTranscoder::HcalTPG);
 
    // edm::ESHandle<L1RCTParameters> rct;
    // setup.get<L1RCTParametersRcd>().get(rct);
