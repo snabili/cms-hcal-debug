@@ -366,7 +366,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       auto fh = fhits.find(pair.first);
 
       if (rh != rhits.end() and fh != fhits.end()) {
-         std::cout << "DOUBLE" << std::endl;
+         assert(0);
       }
 
       if (rh != rhits.end()) {
