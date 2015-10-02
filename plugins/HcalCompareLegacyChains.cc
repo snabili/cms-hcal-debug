@@ -55,6 +55,7 @@
 #include "DataFormats/HcalDetId/interface/HcalTrigTowerDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalRecHit/interface/HBHERecHit.h"
+#include "DataFormats/HcalRecHit/interface/HFRecHit.h"
 #include "DataFormats/L1CaloTrigger/interface/L1CaloCollections.h"
 
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
@@ -88,7 +89,7 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
 
       std::vector<edm::InputTag> frames_;
       edm::InputTag digis_;
-      edm::InputTag rechits_;
+      std::vector<edm::InputTag> rechits_;
 
       TH2D *df_multiplicity_;
       TH2D *tp_multiplicity_;
@@ -132,9 +133,9 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
 HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config) :
    edm::EDAnalyzer(),
    first_(true),
-   frames_(config.getParameter<std::vector<edm::InputTag>>("DataFrames")),
-   digis_(config.getParameter<edm::InputTag>("TriggerPrimitives")),
-   rechits_(config.getParameter<edm::InputTag>("RecHits"))
+   frames_(config.getParameter<std::vector<edm::InputTag>>("dataFrames")),
+   digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
+   rechits_(config.getParameter<std::vector<edm::InputTag>>("recHits"))
 {
    edm::Service<TFileService> fs;
 
@@ -234,6 +235,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    ev_tp_unmatched_ = 0.;
 
    std::map<HcalTrigTowerDetId, std::vector<HBHERecHit>> rhits;
+   std::map<HcalTrigTowerDetId, std::vector<HFRecHit>> fhits;
    std::map<HcalTrigTowerDetId, std::vector<HcalTriggerPrimitiveDigi>> tpdigis;
 
    Handle<HcalTrigPrimDigiCollection> digis;
@@ -245,9 +247,16 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    }
 
    edm::Handle< edm::SortedCollection<HBHERecHit> > hits;
-   if (!event.getByLabel(rechits_, hits)) {
+   if (!event.getByLabel(rechits_[0], hits)) {
       edm::LogError("HcalCompareLegacyChains") <<
-         "Can't find rec hit collection with tag '" << rechits_ << "'" << std::endl;
+         "Can't find rec hit collection with tag '" << rechits_[0] << "'" << std::endl;
+      /* return; */
+   }
+
+   edm::Handle< edm::SortedCollection<HFRecHit> > hfhits;
+   if (!event.getByLabel(rechits_[1], hfhits)) {
+      edm::LogError("HcalCompareLegacyChains") <<
+         "Can't find rec hit collection with tag '" << rechits_[1] << "'" << std::endl;
       /* return; */
    }
 
@@ -272,6 +281,20 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
          for (auto& tower_id: tower_ids) {
             tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1);
             rhits[tower_id].push_back(hit);
+         }
+      }
+   }
+
+   if (hfhits.isValid()) {
+      for (auto& hit: *(hfhits.product())) {
+         HcalDetId id(hit.id());
+         const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
+         ev_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta());
+
+         auto tower_ids = tpd_geo.towerIds(id);
+         for (auto& tower_id: tower_ids) {
+            tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1);
+            fhits[tower_id].push_back(hit);
          }
       }
    }
@@ -340,6 +363,12 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    for (const auto& pair: tpdigis) {
       auto rh = rhits.find(pair.first);
+      auto fh = fhits.find(pair.first);
+
+      if (rh != rhits.end() and fh != fhits.end()) {
+         std::cout << "DOUBLE" << std::endl;
+      }
+
       if (rh != rhits.end()) {
          mt_ieta_ = pair.first.ieta();
          mt_iphi_ = pair.first.iphi();
@@ -359,6 +388,25 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
          }
          matches_->Fill();
          rhits.erase(rh);
+      } else if (fh != fhits.end()) {
+         mt_ieta_ = pair.first.ieta();
+         mt_iphi_ = pair.first.iphi();
+         mt_tp_energy_ = 0;
+         for (const auto& tp: pair.second) {
+            mt_tp_energy_ += decoder->hcaletValue(
+                  pair.first.ieta(),
+                  pair.first.iphi(),
+                  tp.SOI_compressedEt());
+         }
+         mt_rh_energy_ = 0.;
+         for (const auto& hit: fh->second) {
+            HcalDetId id(hit.id());
+            const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
+            auto tower_ids = tpd_geo.towerIds(id);
+            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / tower_ids.size();
+         }
+         matches_->Fill();
+         fhits.erase(fh);
       } else {
          ++ev_tp_unmatched_;
       }
