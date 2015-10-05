@@ -403,7 +403,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
             HcalDetId id(hit.id());
             const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
             auto tower_ids = tpd_geo.towerIds(id);
-            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / tower_ids.size();
+            mt_rh_energy_ += 0.7 * hit.energy() / cosh(local_geo->getPosition().eta()) / tower_ids.size();
          }
          matches_->Fill();
          fhits.erase(fh);
