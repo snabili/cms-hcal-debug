@@ -102,7 +102,7 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       double tp_energy_;
       int tp_ieta_;
       int tp_iphi_;
-      bool tp_sat_;
+      int tp_soi_;
       int tp_depth_max_;
       int tp_depth_start_;
       int tp_depth_end_;
@@ -146,7 +146,7 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    tps_->Branch("et", &tp_energy_);
    tps_->Branch("ieta", &tp_ieta_);
    tps_->Branch("iphi", &tp_iphi_);
-   tps_->Branch("saturated", &tp_sat_);
+   tps_->Branch("soi", &tp_soi_);
    tps_->Branch("depth_max", &tp_depth_max_);
    tps_->Branch("depth_start", &tp_depth_start_);
    tps_->Branch("depth_end", &tp_depth_end_);
@@ -319,7 +319,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       tp_energy_ = decoder->hcaletValue(id.ieta(), id.iphi(), digi.SOI_compressedEt());
       tp_ieta_ = id.ieta();
       tp_iphi_ = id.iphi();
-      tp_sat_ = (digi.SOI_compressedEt() == 0xff) || (digi.SOI_compressedEt() == 0x400);
+      tp_soi_ = digi.SOI_compressedEt();
 
       tp_depth_start_ = -1;
       tp_depth_end_ = -1;
