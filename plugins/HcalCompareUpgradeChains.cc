@@ -1,3 +1,4 @@
+#if 0
 // -*- C++ -*-
 //
 // Package:    HcalCompareUpgradeChains
@@ -375,3 +376,4 @@ HcalCompareUpgradeChains::fillDescriptions(edm::ConfigurationDescriptions& descr
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HcalCompareUpgradeChains);
+#endif

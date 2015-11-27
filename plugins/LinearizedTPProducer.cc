@@ -104,6 +104,7 @@ LinearizedTPProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
    std::auto_ptr<std::vector<LinearizedTP>> res(new std::vector<LinearizedTP>());
 
+#if UP_THERE
    Handle<HcalUpgradeTrigPrimDigiCollection> digis;
    if (!event.getByLabel(digis_, digis)) {
       LogError("LinearizedTPProducer") <<
@@ -136,6 +137,7 @@ LinearizedTPProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
       res->push_back(lin);
    }
+#endif
 
    event.put(res);
 }
