@@ -37,7 +37,7 @@
 
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 
-#include "Debug/HcalCompareChains/interface/LinearizedTP.h"
+#include "Debug/HcalDebug/interface/LinearizedTP.h"
 
 //
 // class declaration

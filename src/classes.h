@@ -1,4 +1,4 @@
-#include "Debug/HcalCompareChains/interface/LinearizedTP.h"
+#include "Debug/HcalDebug/interface/LinearizedTP.h"
 #include "DataFormats/Common/interface/Wrapper.h"
 
 namespace {

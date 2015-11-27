@@ -78,7 +78,7 @@ if hasattr(process,'HcalTPGCoderULUT'):
     # process.HcalTPGCoderULUT.hcalTopologyConstants.maxDepthHB=cms.int32(3)
     # process.HcalTPGCoderULUT.hcalTopologyConstants.maxDepthHE=cms.int32(5)
 
-process.chainplotter = cms.EDAnalyzer("HcalCompareChains",
+process.chainplotter = cms.EDAnalyzer("HcalDebug",
         TriggerPrimitives = cms.InputTag('simHcalTriggerPrimitiveDigis'),
         RecHits = cms.InputTag('hbheUpgradeReco'),
         DataFrames = cms.VInputTag(

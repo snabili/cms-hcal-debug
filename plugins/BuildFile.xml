@@ -16,6 +16,6 @@
 <use name="Geometry/Records"/>
 <use name="PhysicsTools/Utilities"/>
 <use name="RecoLocalCalo/HcalRecAlgos"/>
-<use name="Debug/HcalCompareChains"/>
+<use name="Debug/HcalDebug"/>
 <use name="boost"/>
 <flags EDM_PLUGIN="1"/>

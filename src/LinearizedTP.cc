@@ -1,4 +1,4 @@
-#include "Debug/HcalCompareChains/interface/LinearizedTP.h"
+#include "Debug/HcalDebug/interface/LinearizedTP.h"
 
 LinearizedTP::LinearizedTP(const HcalUpgradeTriggerPrimitiveDigi& d) :
    ieta(d.id().ieta()),
