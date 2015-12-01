@@ -35,8 +35,6 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('s
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
-process.HcalTrigTowerGeometryESProducer.useFullGranularityHF = cms.bool( True )
-
 process.es_ascii = cms.ESSource("HcalTextCalibrations",
     input = cms.VPSet(
         cms.PSet(
