@@ -30,6 +30,7 @@ process.TFileService = cms.Service("TFileService",
         fileName = cms.string(options.outputFile))
 
 process.analyze = cms.EDAnalyzer("AnalyzeTP",
-        triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , ""))
+        triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , ""),
+        useDetIdForUncompression = cms.untracked.bool(False))
 
 process.p = cms.Path(process.analyze)
