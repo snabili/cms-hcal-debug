@@ -31,6 +31,7 @@ process.TFileService = cms.Service("TFileService",
 
 process.analyze = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , ""),
-        useDetIdForUncompression = cms.untracked.bool(False))
+        useDetIdForUncompression = cms.untracked.bool(False),
+        threshold = cms.untracked.double(0.00001))
 
 process.p = cms.Path(process.analyze)
