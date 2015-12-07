@@ -82,6 +82,7 @@ class AnalyzeTP : public edm::EDAnalyzer {
       // ----------member data ---------------------------
       edm::InputTag digis_;
       bool detid_;
+      double threshold_;
 
       TTree *tps_;
 
@@ -100,7 +101,8 @@ class AnalyzeTP : public edm::EDAnalyzer {
 AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    edm::EDAnalyzer(),
    digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
-   detid_(config.getUntrackedParameter<bool>("useDetIdForUncompression", true))
+   detid_(config.getUntrackedParameter<bool>("useDetIdForUncompression", true)),
+   threshold_(config.getUntrackedParameter<double>("threshold", 0.))
 {
    edm::Service<TFileService> fs;
 
@@ -152,6 +154,9 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          tp_et_ = decoder->hcaletValue(id, digi.t0());
       else
          tp_et_ = decoder->hcaletValue(tp_ieta_, tp_iphi_, tp_soi_);
+
+      if (tp_et_ < threshold_)
+         continue;
 
       if (tp_version_ == 0 and abs(tp_ieta_) >= 29) {
          ev_tp_v0_et_ += tp_et_;
