@@ -20,6 +20,7 @@
 
 // system include files
 #include <memory>
+#include <unordered_map>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -84,6 +85,13 @@ class AnalyzeTP : public edm::EDAnalyzer {
       bool detid_;
       double threshold_;
 
+      TTree *match_;
+      int m_ieta_;
+      int m_iphi_;
+      double old_et_;
+      double new_et_;
+      int new_count_;
+
       TTree *tps_;
 
       int tp_ieta_;
@@ -119,6 +127,13 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    ev_ = fs->make<TTree>("evs", "Event quantities");
    ev_->Branch("tp_v0_et", &ev_tp_v0_et_);
    ev_->Branch("tp_v1_et", &ev_tp_v1_et_);
+
+   match_ = fs->make<TTree>("ms", "TP matches");
+   match_->Branch("ieta", &m_ieta_);
+   match_->Branch("iphi", &m_iphi_);
+   match_->Branch("et1x1", &new_et_);
+   match_->Branch("et2x3", &old_et_);
+   match_->Branch("n1x1", &new_count_);
 }
 
 AnalyzeTP::~AnalyzeTP() {}
@@ -138,6 +153,10 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
    ESHandle<CaloTPGTranscoder> decoder;
    setup.get<CaloTPGRecord>().get(decoder);
+
+   std::unordered_map<int, std::unordered_map<int, double>> old_ets;
+   std::unordered_map<int, std::unordered_map<int, double>> new_ets;
+   std::unordered_map<int, std::unordered_map<int, int>> new_counts;
 
    ev_tp_v0_et_ = 0.;
    ev_tp_v1_et_ = 0.;
@@ -160,11 +179,31 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
       if (tp_version_ == 0 and abs(tp_ieta_) >= 29) {
          ev_tp_v0_et_ += tp_et_;
+
+         auto ieta = (tp_ieta_ > 0 ? 1 : -1) * (abs(tp_ieta_) - 28);
+         old_ets[ieta][tp_iphi_/4] += tp_et_;
       } else if (tp_version_ == 1) {
          ev_tp_v1_et_ += tp_et_;
+
+         auto ieta = (tp_ieta_ > 0 ? 1 : -1) * ((abs(tp_ieta_) - 30) / 3 + 1);
+         new_ets[ieta][tp_iphi_/4] += tp_et_;
+         ++new_counts[ieta][tp_iphi_/4];
       }
 
       tps_->Fill();
+   }
+
+   for (int i = -4; i <= 4; ++i) {
+      if (i == 0)
+         continue;
+      for (int j = 0; j < 18; ++j) {
+         m_ieta_ = i;
+         m_iphi_ = j;
+         old_et_ = old_ets[i][j];
+         new_et_ = new_ets[i][j];
+         new_count_ = new_counts[i][j];
+         match_->Fill();
+      }
    }
 
    ev_->Fill();
