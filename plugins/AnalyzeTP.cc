@@ -161,6 +161,15 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    ev_tp_v0_et_ = 0.;
    ev_tp_v1_et_ = 0.;
 
+   ESHandle<HcalTrigTowerGeometry> tpd_geo;
+   setup.get<CaloGeometryRecord>().get(tpd_geo);
+
+   std::map<HcalTrigTowerDetId, HcalTriggerPrimitiveDigi> ttids;
+   for (const auto& digi: *digis) {
+      if (digi.id().version() == 1)
+         ttids[digi.id()] = digi;
+   }
+
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
 
@@ -177,32 +186,40 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       if (tp_et_ < threshold_)
          continue;
 
+      tps_->Fill();
+
       if (tp_version_ == 0 and abs(tp_ieta_) >= 29) {
          ev_tp_v0_et_ += tp_et_;
-
-         auto ieta = (tp_ieta_ > 0 ? 1 : -1) * (abs(tp_ieta_) - 28);
-         old_ets[ieta][tp_iphi_/4] += tp_et_;
       } else if (tp_version_ == 1) {
          ev_tp_v1_et_ += tp_et_;
-
-         auto ieta = (tp_ieta_ > 0 ? 1 : -1) * ((abs(tp_ieta_) - 30) / 3 + 1);
-         new_ets[ieta][tp_iphi_/4] += tp_et_;
-         ++new_counts[ieta][tp_iphi_/4];
       }
 
-      tps_->Fill();
+      if (abs(tp_ieta_) >= 29 and tp_version_ == 0) {
+         std::set<HcalTrigTowerDetId> matches;
+         for (const auto& detid: tpd_geo->detIds(id)) {
+            for (const auto& ttid: tpd_geo->towerIds(detid)) {
+               if (ttid.version() == 1)
+                  matches.insert(ttid);
+            }
+         }
+
+         m_ieta_ = tp_ieta_;
+         m_iphi_ = tp_iphi_;
+         new_et_ = 0;
+         new_count_ = 0;
+         old_et_ = tp_et_;
+         for (const auto& m: matches) {
+            new_et_ += decoder->hcaletValue(m, ttids[m].t0());
+            ++new_count_;
+         }
+         match_->Fill();
+      }
    }
 
    for (int i = -4; i <= 4; ++i) {
       if (i == 0)
          continue;
       for (int j = 0; j < 18; ++j) {
-         m_ieta_ = i;
-         m_iphi_ = j;
-         old_et_ = old_ets[i][j];
-         new_et_ = new_ets[i][j];
-         new_count_ = new_counts[i][j];
-         match_->Fill();
       }
    }
 
