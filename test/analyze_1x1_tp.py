@@ -7,24 +7,23 @@ process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = 'PRE_SHI72_V7'
-process.GlobalTag.globaltag = '76X_mcRun2_HeavyIon_v11'
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v11'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/0C2BBF49-3387-E511-ADD5-3417EBE6459A.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/200C7831-3987-E511-944F-00266CF20468.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/3849AE0A-3487-E511-90EF-00266CFAE228.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/40550625-3087-E511-A4C4-00266CFAE764.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/500B67F4-3487-E511-B068-00266CF2506C.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/5267F176-3887-E511-927F-00266CFADEC0.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/5EF74DD0-3187-E511-B2BF-00266CF9BEF8.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/6C09D335-4087-E511-AFE5-00266CF9B9F0.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/6EBBD119-3187-E511-ACB3-00266CF9B828.root',
-                '/store/relval/CMSSW_8_0_0_pre1/RelValHydjetQ_MinBias_5020GeV/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_HeavyIon_v11_resub-v1/00000/86C86721-3787-E511-A445-00A0D1EE271C.root',
+
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/4431031E-9E7F-E511-9F42-0025905938A4.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/4C462F65-9F7F-E511-972A-0026189438A9.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/703E7EAB-9D7F-E511-B886-003048FFCBFC.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/8AF07AAB-9D7F-E511-B8B4-003048FFCBFC.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/962BEF7C-9D7F-E511-A2BB-0025905B85AA.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/C409A519-9E7F-E511-BD4C-0025905B8590.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/E8D41D6A-9F7F-E511-A10A-003048FFD740.root',
+                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/EE048767-9E7F-E511-B1AA-0025905B8606.root',
+
         )
 )
 
