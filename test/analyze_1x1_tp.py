@@ -7,7 +7,7 @@ process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v11'
+process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_v0'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
@@ -45,16 +45,19 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('s
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
-process.es_ascii = cms.ESSource("HcalTextCalibrations",
-    input = cms.VPSet(
-        cms.PSet(
-            object = cms.string('LutMetadata'),
-            # full path: /afs/cern.ch/user/a/akhukhun/public/HF1x1TPs/LutMetadata_1x1.txt
-            file = cms.FileInPath('LutMetadata_1x1.txt')
-        )
-    )
-)
-process.es_prefer_es_ascii = cms.ESPrefer("HcalTextCalibrations", "es_ascii")
+# process.es_ascii = cms.ESSource("HcalTextCalibrations",
+#     input = cms.VPSet(
+#         cms.PSet(
+#             object = cms.string('LutMetadata'),
+#             # full path: /afs/cern.ch/user/a/akhukhun/public/HF1x1TPs/LutMetadata_1x1.txt
+#             file = cms.FileInPath('LutMetadata_1x1.txt')
+#         )
+#     )
+# )
+# process.es_prefer_es_ascii = cms.ESPrefer("HcalTextCalibrations", "es_ascii")
+
+process.load('CalibCalorimetry.HcalPlugins.Hcal_Conditions_forGlobalTag_cff')
+process.es_hardcode.toGet.append("LutMetadata")
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
