@@ -56,8 +56,21 @@ process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 # )
 # process.es_prefer_es_ascii = cms.ESPrefer("HcalTextCalibrations", "es_ascii")
 
-process.load('CalibCalorimetry.HcalPlugins.Hcal_Conditions_forGlobalTag_cff')
-process.es_hardcode.toGet.append("LutMetadata")
+process.es_pool = cms.ESSource("PoolDBESSource",
+     process.CondDBSetup,
+     timetype = cms.string('runnumber'),
+     toGet = cms.VPSet(
+         cms.PSet(record = cms.string("HcalLutMetadataRcd"),
+             tag = cms.string("HcalLutMetadata_HFTP_1x1")
+             )
+         ),
+     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+     authenticationMethod = cms.untracked.uint32(0)
+     )
+process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
+
+# process.load('CalibCalorimetry.HcalPlugins.Hcal_Conditions_forGlobalTag_cff')
+# process.es_hardcode.toGet.append("LutMetadata")
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
