@@ -85,6 +85,8 @@ class AnalyzeTP : public edm::EDAnalyzer {
       bool detid_;
       double threshold_;
 
+      int event_;
+
       TTree *match_;
       int m_ieta_;
       int m_iphi_;
@@ -117,6 +119,7 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    consumes<HcalTrigPrimDigiCollection>(digis_);
 
    tps_ = fs->make<TTree>("tps", "Trigger primitives");
+   tps_->Branch("event", &event_);
    tps_->Branch("ieta", &tp_ieta_);
    tps_->Branch("iphi", &tp_iphi_);
    tps_->Branch("depth", &tp_depth_);
@@ -125,10 +128,12 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    tps_->Branch("et", &tp_et_);
 
    ev_ = fs->make<TTree>("evs", "Event quantities");
+   ev_->Branch("event", &event_);
    ev_->Branch("tp_v0_et", &ev_tp_v0_et_);
    ev_->Branch("tp_v1_et", &ev_tp_v1_et_);
 
    match_ = fs->make<TTree>("ms", "TP matches");
+   match_->Branch("event", &event_);
    match_->Branch("ieta", &m_ieta_);
    match_->Branch("iphi", &m_iphi_);
    match_->Branch("et1x1", &new_et_);
@@ -142,6 +147,8 @@ void
 AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
    using namespace edm;
+
+   event_ = event.id().event();
 
    Handle<HcalTrigPrimDigiCollection> digis;
    if (!event.getByLabel(digis_, digis)) {
