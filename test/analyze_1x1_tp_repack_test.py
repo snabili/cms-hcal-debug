@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_v0'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
@@ -27,11 +27,11 @@ process.source = cms.Source("PoolSource",
         )
 )
 
-# process.out = cms.OutputModule( "PoolOutputModule",
-#         fileName = cms.untracked.string("output.root"),
-#         outputCommands = cms.untracked.vstring( 'keep *' )
-# )
-# process.end = cms.EndPath(process.out)
+process.out = cms.OutputModule( "PoolOutputModule",
+        fileName = cms.untracked.string("output.root"),
+        outputCommands = cms.untracked.vstring( 'keep *' )
+)
+process.end = cms.EndPath(process.out)
 
 process.load('L1Trigger.RegionalCaloTrigger.rctDigis_cfi')
 process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis"))
