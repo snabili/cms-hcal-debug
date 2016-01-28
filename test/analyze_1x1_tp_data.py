@@ -14,7 +14,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 lst = []
 process.source = cms.Source("PoolSource",
-        skipBadFiles = cms.untracked.bool(True)
+        skipBadFiles = cms.untracked.bool(True),
         fileNames = cms.untracked.vstring(lst),
         firstRun = cms.untracked.uint32(260627)
         # fileNames = cms.untracked.vstring('/store/data/Run2015E/HIEWQExo/RAW/v1/000/262/219/00000/1E4169BC-4891-E511-8D99-02163E0146CF.root')
