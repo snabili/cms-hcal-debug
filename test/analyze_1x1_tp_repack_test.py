@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_v0'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
@@ -27,28 +27,14 @@ process.out = cms.OutputModule( "PoolOutputModule",
 )
 process.end = cms.EndPath(process.out)
 
+process.load("Configuration.Geometry.GeometryReco_cff")
 process.load('L1Trigger.RegionalCaloTrigger.rctDigis_cfi')
 process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis"))
-
-process.load("Geometry.HcalCommonData.testPhase0GeometryXML_cfi")
-process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-process.load("Configuration.Geometry.GeometryReco_cff")
 
 process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
 process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalUnsuppressedDigis'), cms.InputTag('simHcalUnsuppressedDigis') )
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
-
-# process.es_ascii = cms.ESSource("HcalTextCalibrations",
-#     input = cms.VPSet(
-#         cms.PSet(
-#             object = cms.string('LutMetadata'),
-#             # full path: /afs/cern.ch/user/a/akhukhun/public/HF1x1TPs/LutMetadata_1x1.txt
-#             file = cms.FileInPath('LutMetadata_1x1.txt')
-#         )
-#     )
-# )
-# process.es_prefer_es_ascii = cms.ESPrefer("HcalTextCalibrations", "es_ascii")
 
 process.es_pool = cms.ESSource("PoolDBESSource",
      process.CondDBSetup,
@@ -66,8 +52,9 @@ process.es_pool = cms.ESSource("PoolDBESSource",
      )
 process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
 
-# process.load('CalibCalorimetry.HcalPlugins.Hcal_Conditions_forGlobalTag_cff')
-# process.es_hardcode.toGet.append("LutMetadata")
+process.load("Geometry.HcalCommonData.testPhase0GeometryXML_cfi")
+process.es_topo = cms.ESProducer("HcalParametersESModule")
+process.es_prefer_es_topo = cms.ESPrefer( "HcalParametersESModule", "es_topo" )
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
