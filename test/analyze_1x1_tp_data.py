@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.GlobalTag.globaltag = '80X_dataRun2_v1'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 lst = []
 process.source = cms.Source("PoolSource",
@@ -455,29 +455,31 @@ process.source.fileNames.extend([
 process.load('L1Trigger.RegionalCaloTrigger.rctDigis_cfi')
 process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis"))
 
-process.load("Geometry.HcalCommonData.testPhase0GeometryXML_cfi")
-process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-process.load("Configuration.Geometry.GeometryReco_cff")
-
 process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
 process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
 process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('hcalDigis'), cms.InputTag('hcalDigis') )
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
-# process.es_ascii = cms.ESSource("HcalTextCalibrations",
-#     input = cms.VPSet(
-#         cms.PSet(
-#             object = cms.string('LutMetadata'),
-#             # full path: /afs/cern.ch/user/a/akhukhun/public/HF1x1TPs/LutMetadata_1x1.txt
-#             file = cms.FileInPath('LutMetadata_1x1.txt')
-#         )
-#     )
-# )
-# process.es_prefer_es_ascii = cms.ESPrefer("HcalTextCalibrations", "es_ascii")
+process.load("Configuration.Geometry.GeometryExtended2016Reco_cff")
+process.XMLIdealGeometryESSource.geomXMLFiles.remove('Geometry/HcalCommonData/data/Phase0/hcalRecNumbering.xml')
+process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/HcalCommonData/data/Phase0/hcalRecNumberingRun2.xml')
 
-process.load('CalibCalorimetry.HcalPlugins.Hcal_Conditions_forGlobalTag_cff')
-process.es_hardcode.toGet.append("LutMetadata")
+process.es_pool = cms.ESSource("PoolDBESSource",
+     process.CondDBSetup,
+     timetype = cms.string('runnumber'),
+     toGet = cms.VPSet(
+         cms.PSet(record = cms.string("HcalLutMetadataRcd"),
+             tag = cms.string("HcalLutMetadata_HFTP_1x1")
+             ),
+         cms.PSet(record = cms.string("HcalElectronicsMapRcd"),
+             tag = cms.string("HcalElectronicsMap_HFTP_1x1")
+             )
+         ),
+     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+     authenticationMethod = cms.untracked.uint32(0)
+     )
+process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
