@@ -462,8 +462,6 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('h
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
 process.load("Configuration.Geometry.GeometryExtended2016Reco_cff")
-process.XMLIdealGeometryESSource.geomXMLFiles.remove('Geometry/HcalCommonData/data/Phase0/hcalRecNumbering.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/HcalCommonData/data/Phase0/hcalRecNumberingRun2.xml')
 
 process.es_pool = cms.ESSource("PoolDBESSource",
      process.CondDBSetup,
