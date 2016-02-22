@@ -42,21 +42,26 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('s
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
 process.load("Configuration.Geometry.GeometryExtended2016Reco_cff")
-process.XMLIdealGeometryESSource.geomXMLFiles.remove('Geometry/HcalCommonData/data/Phase0/hcalRecNumbering.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/HcalCommonData/data/Phase0/hcalRecNumberingRun2.xml')
+from CondCore.CondDB.CondDB_cfi import CondDB
 
-process.es_pool = cms.ESSource("PoolDBESSource",
-     process.CondDBSetup,
-     timetype = cms.string('runnumber'),
-     toGet = cms.VPSet(
-         cms.PSet(record = cms.string("HcalLutMetadataRcd"),
-             tag = cms.string("HcalLutMetadata_HFTP_1x1")
-             )
-         ),
-     connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-     authenticationMethod = cms.untracked.uint32(0)
-     )
-process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
+process.CondDBSetup = CondDB.clone()
+delattr(process.CondDBSetup, 'connect')
+
+# process.es_pool = cms.ESSource("PoolDBESSource",
+#      process.CondDBSetup,
+#      timetype = cms.string('runnumber'),
+#      toGet = cms.VPSet(
+#          cms.PSet(record = cms.string("HcalLutMetadataRcd"),
+#              tag = cms.string("HcalLutMetadata_HFTP_1x1")
+#              )
+#          ),
+#      connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+#      authenticationMethod = cms.untracked.uint32(0)
+#      )
+# process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
+
+from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1
+customise_HcalPhase1(process)
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),

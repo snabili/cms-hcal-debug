@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.GlobalTag.globaltag = '80X_dataRun2_v1'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 lst = []
 process.source = cms.Source("PoolSource",
@@ -463,13 +463,17 @@ process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
 process.load("Configuration.Geometry.GeometryExtended2016Reco_cff")
 
+process.raw2digi_step = cms.Path(process.hcalDigis)
+from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1
+customise_HcalPhase1(process)
+
 process.es_pool = cms.ESSource("PoolDBESSource",
      process.CondDBSetup,
      timetype = cms.string('runnumber'),
      toGet = cms.VPSet(
-         cms.PSet(record = cms.string("HcalLutMetadataRcd"),
-             tag = cms.string("HcalLutMetadata_HFTP_1x1")
-             ),
+         # cms.PSet(record = cms.string("HcalLutMetadataRcd"),
+         #     tag = cms.string("HcalLutMetadata_HFTP_1x1")
+         #     ),
          cms.PSet(record = cms.string("HcalElectronicsMapRcd"),
              tag = cms.string("HcalElectronicsMap_HFTP_1x1")
              )
@@ -477,7 +481,9 @@ process.es_pool = cms.ESSource("PoolDBESSource",
      connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
      authenticationMethod = cms.untracked.uint32(0)
      )
-process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
+# process.es_hardcode.toGet.remove("LutMetadata")
+process.es_hardcode.toGet.remove("ElectronicsMap")
+process.es_prefer_es_pool = cms.ESPrefer("PoolDBESSource", "es_pool")
 
 process.TFileService = cms.Service("TFileService",
         closeFileFast = cms.untracked.bool(True),
