@@ -8,7 +8,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.autoCond import autoCond
-process.GlobalTag.globaltag = autoCond['run2_data']
+process.GlobalTag.globaltag = autoCond['run2_mc']
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
@@ -54,6 +54,9 @@ delattr(process.CondDBSetup, 'connect')
 #      toGet = cms.VPSet(
 #          cms.PSet(record = cms.string("HcalLutMetadataRcd"),
 #              tag = cms.string("HcalLutMetadata_HFTP_1x1")
+#              ),
+#          cms.PSet(record = cms.string("HcalElectronicsMapRcd"),
+#              tag = cms.string("HcalElectronicsMap_HFTP_1x1")
 #              )
 #          ),
 #      connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
