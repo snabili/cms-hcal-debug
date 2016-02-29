@@ -7,10 +7,11 @@ process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = '80X_dataRun2_v1'
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag = autoCond['run2_data']
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 lst = []
 process.source = cms.Source("PoolSource",
@@ -456,7 +457,8 @@ process.load('L1Trigger.RegionalCaloTrigger.rctDigis_cfi')
 process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis"))
 
 process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
-process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
+# process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
+process.load("SimCalorimetry.Configuration.hcalDigiSequence_cff")
 process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('hcalDigis'), cms.InputTag('hcalDigis') )
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
@@ -493,9 +495,12 @@ process.analyze = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
 process.analyzeRaw = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("hcalDigis", "" , "HFCALIB"))
+process.compare = cms.EDAnalyzer("CompareTP",
+        triggerPrimitives = cms.InputTag("hcalDigis", "" , "HFCALIB"),
+        emulTriggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
 
 # process.hcalDigis.InputLabel = cms.InputTag("rawDataRepacker")
 
-process.p = cms.Path(process.hcalDigis * process.simHcalTriggerPrimitiveDigis * process.analyze * process.analyzeRaw)
+process.p = cms.Path(process.hcalDigis * process.simHcalTriggerPrimitiveDigis * process.analyze * process.analyzeRaw * process.compare)
 
 # print process.dumpPython()

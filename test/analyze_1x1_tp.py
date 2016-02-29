@@ -7,10 +7,11 @@ process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_v0'
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag = autoCond['run2_data']
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
@@ -71,7 +72,10 @@ process.analyze = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
 process.analyzeOld = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HLT"))
+process.compare = cms.EDAnalyzer("CompareTP",
+        triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HLT"),
+        emulTriggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
 
-process.p = cms.Path(process.simHcalTriggerPrimitiveDigis * process.analyze * process.analyzeOld)
+process.p = cms.Path(process.simHcalTriggerPrimitiveDigis * process.analyze * process.analyzeOld * process.compare)
 
 # print process.dumpPython()
