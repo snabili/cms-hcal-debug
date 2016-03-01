@@ -5,7 +5,7 @@ r.gROOT.SetBatch()
 r.gStyle.SetOptStat(0)
 
 infile, outfile = sys.argv[1:]
-outfile2 = '_cmp'.join(outfile.rsplit('.'))
+outfile2 = '_cmp.'.join(outfile.rsplit('.'))
 
 f = r.TFile(infile)
 
