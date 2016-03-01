@@ -10,20 +10,24 @@ f = r.TFile(infile)
 
 specs = [
         ("analyze", " (reemulated)"),
-        ("analyzeRaw", " (from RAW)")
+        ("analyzeRaw", " (from RAW)"),
+        ("analyzeOld", " (from DIGI)")
 ]
 
+c = r.TCanvas()
+c.SaveAs(outfile + '[')
 for subdir, qual in specs:
     e = f.Get(subdir + "/evs")
     t = f.Get(subdir + "/tps")
     m = f.Get(subdir + "/ms")
 
+    if not any(isinstance(x, r.TTree) for x in (e, t, m)):
+        continue
+
     fct = r.TF1("fct", "x", 0, 50000)
     fct.SetLineColor(r.kRed)
     fct.SetLineWidth(2)
 
-    c = r.TCanvas()
-    c.SaveAs(outfile + '[')
     e.Draw("tp_v1_et:tp_v0_et>>hist", "", "COLZ")
     r.gDirectory.Get("hist").SetTitle("HF 1x1 TP vs 2x3 TP" + qual + ";#sum E_{T} HF, v0;#sum E_{T} HF, v1")
     fct.Draw("same")
@@ -78,4 +82,5 @@ for subdir, qual in specs:
     m.Draw("et2x3-et1x1>>hist14", "et2x3 < 127")
     r.gDirectory.Get("hist14").SetTitle("HF 2x3 vs 1x1 TP E_{T} for unsatured 2x3 TP" + qual + ";E_{T} 2x3 TP - E_{T} 1x1 TP;Count")
     c.SaveAs(outfile)
+    c.SetLogy(False)
 c.SaveAs(outfile + ']')
