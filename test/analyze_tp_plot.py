@@ -5,6 +5,7 @@ r.gROOT.SetBatch()
 r.gStyle.SetOptStat(0)
 
 infile, outfile = sys.argv[1:]
+outfile2 = '_cmp'.join(outfile.rsplit('.'))
 
 f = r.TFile(infile)
 
@@ -15,6 +16,18 @@ specs = [
 ]
 
 c = r.TCanvas()
+
+c.SaveAs(outfile2 + '[')
+d = f.Get("compare/tps")
+c.SetLogz()
+d.Draw("et_emul:et", "abs(ieta)<=28 && version==0", "COLZ")
+c.SaveAs(outfile2)
+d.Draw("et_emul:et", "abs(ieta)>28 && version==0", "COLZ")
+c.SaveAs(outfile2)
+d.Draw("et_emul:et", "abs(ieta)>28 && version==1", "COLZ")
+c.SaveAs(outfile2)
+c.SaveAs(outfile2 + ']')
+
 c.SaveAs(outfile + '[')
 for subdir, qual in specs:
     e = f.Get(subdir + "/evs")
