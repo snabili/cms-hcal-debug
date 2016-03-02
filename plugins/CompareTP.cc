@@ -180,14 +180,14 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       digi_map::const_iterator digi;
       if ((digi = ds.find(id)) != ds.end()) {
          tp_soi_ = digi->second.SOI_compressedEt();
-         tp_et_ = decoder->hcaletValue(tp_ieta_, tp_iphi_, tp_soi_);
+         tp_et_ = decoder->hcaletValue(id, digi->second.t0());
       } else {
          tp_soi_ = 0;
          tp_et_ = 0;
       }
       if ((digi = eds.find(id)) != eds.end()) {
          tp_soi_emul_ = digi->second.SOI_compressedEt();
-         tp_et_emul_ = decoder->hcaletValue(tp_ieta_, tp_iphi_, tp_soi_emul_);
+         tp_et_emul_ = decoder->hcaletValue(id, digi->second.t0());
       } else {
          tp_soi_emul_ = 0;
          tp_et_emul_ = 0;
