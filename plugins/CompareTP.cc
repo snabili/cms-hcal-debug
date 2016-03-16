@@ -185,7 +185,14 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          tp_soi_ = 0;
          tp_et_ = 0;
       }
-      if ((digi = eds.find(id)) != eds.end()) {
+      auto new_id(id);
+      if (id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
+         if (id.iphi() % 4 == 1)
+            new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 70) % 72, id.depth(), id.version());
+         else
+            new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 2) % 72 , id.depth(), id.version());
+      }
+      if ((digi = eds.find(new_id)) != eds.end()) {
          tp_soi_emul_ = digi->second.SOI_compressedEt();
          tp_et_emul_ = decoder->hcaletValue(id, digi->second.t0());
       } else {
