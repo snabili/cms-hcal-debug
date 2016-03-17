@@ -91,6 +91,8 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       edm::InputTag digis_;
       std::vector<edm::InputTag> rechits_;
 
+      bool swap_iphi_;
+
       TH2D *df_multiplicity_;
       TH2D *tp_multiplicity_;
 
@@ -128,6 +130,7 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
 
       int mt_ieta_;
       int mt_iphi_;
+      int mt_version_;
 };
 
 HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config) :
@@ -135,7 +138,8 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    first_(true),
    frames_(config.getParameter<std::vector<edm::InputTag>>("dataFrames")),
    digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
-   rechits_(config.getParameter<std::vector<edm::InputTag>>("recHits"))
+   rechits_(config.getParameter<std::vector<edm::InputTag>>("recHits")),
+   swap_iphi_(config.getParameter<bool>("swapIphi"))
 {
    consumes<HcalTrigPrimDigiCollection>(digis_);
    consumes<HBHEDigiCollection>(frames_[0]);
@@ -180,6 +184,7 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    matches_->Branch("TP_energy", &mt_tp_energy_);
    matches_->Branch("ieta", &mt_ieta_);
    matches_->Branch("iphi", &mt_iphi_);
+   matches_->Branch("tp_version", &mt_version_);
 }
 
 HcalCompareLegacyChains::~HcalCompareLegacyChains() {}
@@ -299,7 +304,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
-            tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1);
+            tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1, tower_id.version());
             fhits[tower_id].push_back(hit);
          }
       }
@@ -318,7 +323,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
-      id = HcalTrigTowerDetId(id.ieta(), id.iphi(), 1);
+      id = HcalTrigTowerDetId(id.ieta(), id.iphi(), 1, id.version());
       ev_tp_energy_ += decoder->hcaletValue(id, digi.t0());
       tpdigis[id].push_back(digi);
 
@@ -368,20 +373,32 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    }
 
    for (const auto& pair: tpdigis) {
-      auto rh = rhits.find(pair.first);
-      auto fh = fhits.find(pair.first);
+      auto id = pair.first;
+      auto rh = rhits.find(id);
+      auto fh = fhits.find(id);
 
       if (rh != rhits.end() and fh != fhits.end()) {
          assert(0);
       }
 
+      auto new_id(id);
+      if (swap_iphi_ and id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
+         if (id.iphi() % 4 == 1)
+            new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 70) % 72, id.depth(), id.version());
+         else
+            new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 2) % 72 , id.depth(), id.version());
+      }
+
+      mt_ieta_ = new_id.ieta();
+      mt_iphi_ = new_id.iphi();
+      mt_version_ = new_id.version();
+      mt_tp_energy_ = 0;
+
+      for (const auto& tp: pair.second)
+         mt_tp_energy_ += decoder->hcaletValue(new_id, tp.t0());
+      mt_rh_energy_ = 0.;
+
       if (rh != rhits.end()) {
-         mt_ieta_ = pair.first.ieta();
-         mt_iphi_ = pair.first.iphi();
-         mt_tp_energy_ = 0;
-         for (const auto& tp: pair.second)
-            mt_tp_energy_ += decoder->hcaletValue(pair.first, tp.t0());
-         mt_rh_energy_ = 0.;
          for (const auto& hit: rh->second) {
             HcalDetId id(hit.id());
             const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
@@ -391,16 +408,6 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
          matches_->Fill();
          rhits.erase(rh);
       } else if (fh != fhits.end()) {
-         mt_ieta_ = pair.first.ieta();
-         mt_iphi_ = pair.first.iphi();
-         mt_tp_energy_ = 0;
-         for (const auto& tp: pair.second) {
-            mt_tp_energy_ += decoder->hcaletValue(
-                  pair.first.ieta(),
-                  pair.first.iphi(),
-                  tp.SOI_compressedEt());
-         }
-         mt_rh_energy_ = 0.;
          for (const auto& hit: fh->second) {
             HcalDetId id(hit.id());
             const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
