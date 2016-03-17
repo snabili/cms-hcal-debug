@@ -374,12 +374,6 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    for (const auto& pair: tpdigis) {
       auto id = pair.first;
-      auto rh = rhits.find(id);
-      auto fh = fhits.find(id);
-
-      if (rh != rhits.end() and fh != fhits.end()) {
-         assert(0);
-      }
 
       auto new_id(id);
       if (swap_iphi_ and id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
@@ -387,6 +381,13 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
             new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 70) % 72, id.depth(), id.version());
          else
             new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 2) % 72 , id.depth(), id.version());
+      }
+
+      auto rh = rhits.find(new_id);
+      auto fh = fhits.find(new_id);
+
+      if (rh != rhits.end() and fh != fhits.end()) {
+         assert(0);
       }
 
       mt_ieta_ = new_id.ieta();
