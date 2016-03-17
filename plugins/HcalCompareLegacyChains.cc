@@ -313,10 +313,10 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
       id = HcalTrigTowerDetId(id.ieta(), id.iphi(), 1);
-      ev_tp_energy_ += decoder->hcaletValue(id.ieta(), id.iphi(), digi.SOI_compressedEt());
+      ev_tp_energy_ += decoder->hcaletValue(id, digi.t0());
       tpdigis[id].push_back(digi);
 
-      tp_energy_ = decoder->hcaletValue(id.ieta(), id.iphi(), digi.SOI_compressedEt());
+      tp_energy_ = decoder->hcaletValue(id, digi.t0());
       tp_ieta_ = id.ieta();
       tp_iphi_ = id.iphi();
       tp_soi_ = digi.SOI_compressedEt();
@@ -373,12 +373,8 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
          mt_ieta_ = pair.first.ieta();
          mt_iphi_ = pair.first.iphi();
          mt_tp_energy_ = 0;
-         for (const auto& tp: pair.second) {
-            mt_tp_energy_ += decoder->hcaletValue(
-                  pair.first.ieta(),
-                  pair.first.iphi(),
-                  tp.SOI_compressedEt());
-         }
+         for (const auto& tp: pair.second)
+            mt_tp_energy_ += decoder->hcaletValue(pair.first, tp.t0());
          mt_rh_energy_ = 0.;
          for (const auto& hit: rh->second) {
             HcalDetId id(hit.id());
