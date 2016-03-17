@@ -85,6 +85,8 @@ class CompareTP : public edm::EDAnalyzer {
       edm::InputTag digis_;
       edm::InputTag edigis_;
 
+      bool swap_iphi_;
+
       int event_;
 
       TTree *tps_;
@@ -102,7 +104,8 @@ class CompareTP : public edm::EDAnalyzer {
 CompareTP::CompareTP(const edm::ParameterSet& config) :
    edm::EDAnalyzer(),
    digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
-   edigis_(config.getParameter<edm::InputTag>("emulTriggerPrimitives"))
+   edigis_(config.getParameter<edm::InputTag>("emulTriggerPrimitives")),
+   swap_iphi_(config.getParameter<bool>("swapIphi"))
 {
    edm::Service<TFileService> fs;
 
@@ -186,7 +189,7 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          tp_et_ = 0;
       }
       auto new_id(id);
-      if (id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
+      if (swap_iphi_ and id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
          if (id.iphi() % 4 == 1)
             new_id = HcalTrigTowerDetId(id.ieta(), (id.iphi() + 70) % 72, id.depth(), id.version());
          else
