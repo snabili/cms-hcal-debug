@@ -137,6 +137,12 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
    rechits_(config.getParameter<std::vector<edm::InputTag>>("recHits"))
 {
+   consumes<HcalTrigPrimDigiCollection>(digis_);
+   consumes<HBHEDigiCollection>(frames_[0]);
+   consumes<HFDigiCollection>(frames_[1]);
+   consumes<edm::SortedCollection<HBHERecHit>>(rechits_[0]);
+   consumes<edm::SortedCollection<HFRecHit>>(rechits_[1]);
+
    edm::Service<TFileService> fs;
 
    df_multiplicity_ = fs->make<TH2D>("df_multiplicity", "DataFrame multiplicity;ieta;iphi", 65, -32.5, 32.5, 72, 0.5, 72.5);
