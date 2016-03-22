@@ -5,7 +5,7 @@ r.gROOT.SetBatch()
 r.gStyle.SetOptStat(0)
 
 infile, outfile = sys.argv[1:]
-outfile2 = '_cmp.'.join(outfile.rsplit('.'))
+outfile2 = '_cmp.'.join(outfile.rsplit('.', 1))
 
 f = r.TFile(infile)
 
@@ -24,7 +24,9 @@ d.Draw("et_emul:et", "abs(ieta)<=28 && version==0", "COLZ")
 c.SaveAs(outfile2)
 d.Draw("et_emul:et", "abs(ieta)>28 && version==0", "COLZ")
 c.SaveAs(outfile2)
-d.Draw("et_emul:et", "abs(ieta)>28 && version==1", "COLZ")
+d.Draw("et_emul:et", "ieta>28 && version==1", "COLZ")
+c.SaveAs(outfile2)
+d.Draw("et_emul:et", "ieta<-28 && version==1", "COLZ")
 c.SaveAs(outfile2)
 c.SaveAs(outfile2 + ']')
 
