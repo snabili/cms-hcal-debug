@@ -99,6 +99,8 @@ class CompareTP : public edm::EDAnalyzer {
       int tp_soi_emul_;
       double tp_et_;
       double tp_et_emul_;
+      int tp_fg_;
+      int tp_fg_emul_;
 };
 
 CompareTP::CompareTP(const edm::ParameterSet& config) :
@@ -122,6 +124,8 @@ CompareTP::CompareTP(const edm::ParameterSet& config) :
    tps_->Branch("soi_emul", &tp_soi_emul_);
    tps_->Branch("et", &tp_et_);
    tps_->Branch("et_emul", &tp_et_emul_);
+   tps_->Branch("fg", &tp_fg_);
+   tps_->Branch("fg_emul", &tp_fg_emul_);
 }
 
 CompareTP::~CompareTP() {}
@@ -184,9 +188,11 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       if ((digi = ds.find(id)) != ds.end()) {
          tp_soi_ = digi->second.SOI_compressedEt();
          tp_et_ = decoder->hcaletValue(id, digi->second.t0());
+         tp_fg_ = digi->second.SOI_fineGrain();
       } else {
          tp_soi_ = 0;
          tp_et_ = 0;
+         tp_fg_ = 0;
       }
       auto new_id(id);
       if (swap_iphi_ and id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
@@ -198,9 +204,11 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       if ((digi = eds.find(new_id)) != eds.end()) {
          tp_soi_emul_ = digi->second.SOI_compressedEt();
          tp_et_emul_ = decoder->hcaletValue(id, digi->second.t0());
+         tp_fg_emul_ = digi->second.SOI_fineGrain();
       } else {
          tp_soi_emul_ = 0;
          tp_et_emul_ = 0;
+         tp_fg_emul_ = 0;
       }
       tps_->Fill();
    }
