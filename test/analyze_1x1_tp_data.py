@@ -17,15 +17,13 @@ lst = []
 process.source = cms.Source("PoolSource",
         skipBadFiles = cms.untracked.bool(True),
         fileNames = cms.untracked.vstring(lst),
-        # firstRun = cms.untracked.uint32(260627)
+        firstRun = cms.untracked.uint32(272818)
         # fileNames = cms.untracked.vstring('/store/data/Run2015E/HIEWQExo/RAW/v1/000/262/219/00000/1E4169BC-4891-E511-8D99-02163E0146CF.root')
 )
 
 process.source.fileNames.extend([
 
-    '/store/data/Run2016A/HcalNZS/RAW/v1/000/271/654/00000/BA9BEAEA-5D0C-E611-A64A-02163E01470B.root',
-    '/store/data/Run2016A/HcalNZS/RAW/v1/000/271/654/00000/BA9BEAEA-5D0C-E611-A64A-02163E01470B.root',
-    '/store/data/Run2016A/HcalNZS/RAW/v1/000/271/654/00000/FA46A0F2-5A0C-E611-9DC5-02163E0127A1.root'
+    '/store/data/Run2016B/HcalNZS/RAW/v1/000/272/818/00000/160D9108-A015-E611-B882-02163E0146A6.root'
 
 ])
 
@@ -35,9 +33,6 @@ process.source.fileNames.extend([
 # )
 # process.end = cms.EndPath(process.out)
 
-process.load('L1Trigger.RegionalCaloTrigger.rctDigis_cfi')
-process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis"))
-
 process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
 # process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
 process.load("SimCalorimetry.Configuration.hcalDigiSequence_cff")
@@ -46,6 +41,8 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('h
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
 process.load("Configuration.Geometry.GeometryExtended2016Reco_cff")
+
+process.load("EventFilter.L1TRawToDigi.caloStage2Digis_cfi")
 
 # process.raw2digi_step = cms.Path(process.hcalDigis)
 # from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1
@@ -84,6 +81,16 @@ process.compare = cms.EDAnalyzer("CompareTP",
 
 # process.hcalDigis.InputLabel = cms.InputTag("rawDataRepacker")
 
-process.p = cms.Path(process.hcalDigis * process.simHcalTriggerPrimitiveDigis * process.analyze * process.analyzeRaw * process.compare)
+process.dump = cms.EDAnalyzer("EventContentAnalyzer")
+
+process.p = cms.Path(
+        process.hcalDigis
+        * process.caloStage2Digis
+        * process.simHcalTriggerPrimitiveDigis
+        # * process.dump
+        * process.analyze
+        * process.analyzeRaw
+        * process.compare
+)
 
 # print process.dumpPython()
