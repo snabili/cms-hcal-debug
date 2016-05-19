@@ -9,10 +9,11 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond['run2_data']
+process.GlobalTag.globaltag = "80X_dataRun2_HLT_v6"
 print process.GlobalTag.globaltag
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) )
 # process.skipEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 lst = []
