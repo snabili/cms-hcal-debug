@@ -10,8 +10,8 @@ outfile2 = '_cmp.'.join(outfile.rsplit('.', 1))
 f = r.TFile(infile)
 
 specs = [
-        ("analyze", " (reemulated)"),
         ("analyzeRaw", " (from RAW)"),
+        ("analyze", " (reemulated)"),
         ("analyzeOld", " (from DIGI)")
 ]
 
@@ -20,6 +20,18 @@ c = r.TCanvas()
 c.SaveAs(outfile2 + '[')
 d = f.Get("compare/tps")
 c.SetLogz()
+d.Draw("et_emul:et>>rhist(128,0,128,128,0,128)", "version==1", "COLZ")
+r.gDirectory.Get("rhist").SetTitle(";1x1 TP E_{T};1x1 TP E_{T} reemulated")
+c.SaveAs(outfile2)
+d.Draw("et_emul:et>>rhist2(128,0,128,128,0,128)", "version==0", "COLZ")
+r.gDirectory.Get("rhist2").SetTitle(";2x3 TP E_{T};2x3 TP E_{T} reemulated")
+c.SaveAs(outfile2)
+d.Draw("et-et_emul>>rhist3", "version==1", "COLZ")
+r.gDirectory.Get("rhist").SetTitle(";1x1 TP E_{T} - E_{T} reemulated;")
+c.SaveAs(outfile2)
+d.Draw("et-et_emul>>rhist4", "version==0", "COLZ")
+r.gDirectory.Get("rhist").SetTitle(";2x3 TP E_{T} - E_{T} reemulated;")
+c.SaveAs(outfile2)
 d.Draw("et_emul:et", "abs(ieta)<=28 && version==0", "COLZ")
 c.SaveAs(outfile2)
 d.Draw("et_emul:et", "abs(ieta)>28 && version==0", "COLZ")
@@ -44,7 +56,7 @@ for subdir, qual in specs:
     fct.SetLineWidth(2)
 
     e.Draw("tp_v1_et:tp_v0_et>>hist", "", "COLZ")
-    r.gDirectory.Get("hist").SetTitle("HF 1x1 TP vs 2x3 TP" + qual + ";#sum E_{T} HF, v0;#sum E_{T} HF, v1")
+    r.gDirectory.Get("hist").SetTitle("HF 1x1 TP vs 2x3 TP" + qual + ";#sum E_{T} HF, 2x3;#sum E_{T} HF, 1x1")
     fct.Draw("same")
     c.SaveAs(outfile)
     t.Draw("ieta>>hist2", "et * (version==1)")
@@ -53,7 +65,7 @@ for subdir, qual in specs:
     t.Draw("ieta>>hist3", "et * (version==0)")
     r.gDirectory.Get("hist3").SetTitle("HF 2x3 TP" + qual + ";ieta;#sum E_{T}")
     c.SaveAs(outfile)
-    m.Draw("et1x1:et2x3>>hist4", "et1x1<200", "COLZ")
+    m.Draw("et1x1:et2x3>>hist4(128,0,128,128,0,128)", "et1x1<200", "COLZ")
     c.SetLogz()
     r.gDirectory.Get("hist4").SetTitle("#sum HF 1x1 in a single 2x3 TP" + qual + ";E_{T} 2x3 TP;#sum E_{T} 1x1 TP")
 # r.gDirectory.Get("hist4").GetYaxis().SetRangeUser(SetTitle("#sum HF 1x1 in a single 2x3 TP;E_{T} 2x3 TP;#sum E_{T} 1x1 TP")
