@@ -13,7 +13,7 @@ process.GlobalTag.globaltag = "80X_dataRun2_HLT_v6"
 print process.GlobalTag.globaltag
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 # process.skipEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 lst = []
@@ -89,11 +89,17 @@ process.TFileService = cms.Service("TFileService",
 
 process.analyze = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
+process.analyzeL1T = cms.EDAnalyzer("AnalyzeTP",
+        triggerPrimitives = cms.InputTag("l1tCaloLayer1Digis", "" , "HFCALIB"))
 process.analyzeRaw = cms.EDAnalyzer("AnalyzeTP",
         triggerPrimitives = cms.InputTag("hcalDigis", "" , "HFCALIB"))
 process.compare = cms.EDAnalyzer("CompareTP",
         swapIphi = cms.bool(False),
         triggerPrimitives = cms.InputTag("hcalDigis", "" , "HFCALIB"),
+        emulTriggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
+process.compareL1T = cms.EDAnalyzer("CompareTP",
+        swapIphi = cms.bool(False),
+        triggerPrimitives = cms.InputTag("l1tCaloLayer1Digis", "" , "HFCALIB"),
         emulTriggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
 process.analyzeCT = cms.EDAnalyzer("AnalyzeCT",
         caloTowers = cms.InputTag("caloStage2Digis", "CaloTower"))
@@ -109,9 +115,11 @@ process.p = cms.Path(
         * process.simHcalTriggerPrimitiveDigis
         # * process.dump
         * process.analyze
+        * process.analyzeL1T
         * process.analyzeRaw
         * process.analyzeCT
         * process.compare
+        * process.compareL1T
 )
 
 # print process.dumpPython()
