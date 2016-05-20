@@ -180,6 +180,8 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    }
 
    for (const auto& id: ids) {
+      if (id.version() == 1 and abs(id.ieta()) >= 40 and id.iphi() % 4 == 1)
+         continue;
       tp_ieta_ = id.ieta();
       tp_iphi_ = id.iphi();
       tp_depth_ = id.depth();

@@ -184,6 +184,9 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
 
+      if (id.version() == 1 and abs(id.ieta()) >= 40 and id.iphi() % 4 == 1)
+         continue;
+
       tp_ieta_ = id.ieta();
       tp_iphi_ = id.iphi();
       tp_depth_ = id.depth();
@@ -220,6 +223,9 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          old_fg_ = tp_fg_;
          new_fg_ = 0;
          for (const auto& m: matches) {
+            if (m.version() == 1 and abs(m.ieta()) >= 40 and m.iphi() % 4 == 1)
+               continue;
+
             new_et_ += decoder->hcaletValue(m, ttids[m].t0());
             ++new_count_;
             new_fg_ = new_fg_ || ttids[m].t0().fineGrain();
