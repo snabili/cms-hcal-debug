@@ -120,7 +120,7 @@ AnalyzePreReco::analyze(const edm::Event& event, const edm::EventSetup& setup)
          auto info = prehit.getHFQIE10Info(i);
          if (!info)
             continue;
-         adc_ = info->adc();
+         adc_ = info->soi();
          charge_ = info->charge();
          energy_ = info->energy();
          time_rising_ = info->timeRising();
