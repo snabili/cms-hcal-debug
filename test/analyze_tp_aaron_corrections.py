@@ -12,7 +12,7 @@ process.GlobalTag.globaltag = "80X_dataRun2_HLT_Validation_HcalL1TriggerObjects_
 print process.GlobalTag.globaltag
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
 # process.skipEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 lst = []

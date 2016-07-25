@@ -13,7 +13,7 @@ process.GlobalTag.globaltag = autoCond['run2_data']
 print process.GlobalTag.globaltag
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
 # process.skipEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 lst = []
