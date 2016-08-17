@@ -92,8 +92,10 @@ class AnalyzeTP : public edm::EDAnalyzer {
       double old_et_;
       double new_et_;
       int new_count_;
-      int old_fg_;
-      int new_fg_;
+      int old_fg0_;
+      int old_fg1_;
+      int new_fg0_;
+      int new_fg1_;
 
       TTree *tps_;
 
@@ -102,7 +104,8 @@ class AnalyzeTP : public edm::EDAnalyzer {
       int tp_depth_;
       int tp_version_;
       int tp_soi_;
-      int tp_fg_;
+      int tp_fg0_;
+      int tp_fg1_;
       double tp_et_;
 
       TTree *ev_;
@@ -127,7 +130,8 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    tps_->Branch("version", &tp_version_);
    tps_->Branch("soi", &tp_soi_);
    tps_->Branch("et", &tp_et_);
-   tps_->Branch("fg", &tp_fg_);
+   tps_->Branch("fg0", &tp_fg0_);
+   tps_->Branch("fg1", &tp_fg1_);
 
    ev_ = fs->make<TTree>("evs", "Event quantities");
    ev_->Branch("event", &event_);
@@ -141,8 +145,10 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    match_->Branch("et1x1", &new_et_);
    match_->Branch("et2x3", &old_et_);
    match_->Branch("n1x1", &new_count_);
-   match_->Branch("fg1x1", &new_fg_);
-   match_->Branch("fg2x3", &old_fg_);
+   match_->Branch("fg0_1x1", &new_fg0_);
+   match_->Branch("fg1_1x1", &new_fg1_);
+   match_->Branch("fg0_2x3", &old_fg0_);
+   match_->Branch("fg1_2x3", &old_fg1_);
 }
 
 AnalyzeTP::~AnalyzeTP() {}
@@ -193,7 +199,8 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       tp_version_ = id.version();
       tp_soi_ = digi.SOI_compressedEt();
       tp_et_ = decoder->hcaletValue(id, digi.t0());
-      tp_fg_ = digi.SOI_fineGrain();
+      tp_fg0_ = digi.t0().fineGrain(0);
+      tp_fg1_ = digi.t0().fineGrain(1);
 
       if (tp_et_ < threshold_)
          continue;
@@ -220,15 +227,18 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          new_et_ = 0;
          new_count_ = 0;
          old_et_ = tp_et_;
-         old_fg_ = tp_fg_;
-         new_fg_ = 0;
+         old_fg0_ = tp_fg0_;
+         old_fg1_ = tp_fg1_;
+         new_fg0_ = 0;
+         new_fg1_ = 0;
          for (const auto& m: matches) {
             if (m.version() == 1 and abs(m.ieta()) >= 40 and m.iphi() % 4 == 1)
                continue;
 
             new_et_ += decoder->hcaletValue(m, ttids[m].t0());
             ++new_count_;
-            new_fg_ = new_fg_ || ttids[m].t0().fineGrain();
+            new_fg0_ = new_fg0_ || ttids[m].t0().fineGrain(0);
+            new_fg1_ = new_fg1_ || ttids[m].t0().fineGrain(1);
          }
          match_->Fill();
       }
