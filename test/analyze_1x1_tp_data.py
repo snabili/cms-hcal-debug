@@ -26,7 +26,7 @@ process.source = cms.Source("PoolSource",
 
 process.source.fileNames.extend([
 
-    '/store/data/Run2016F/HcalNZS/RAW/v1/000/278/315/00000/B43BF80D-B65C-E611-8C96-FA163E7D2163.root'
+    '/store/data/Run2016F/HcalNZS/RAW/v1/000/278/366/00000/78B50FE0-415E-E611-96C5-02163E011A02.root'
 
 ])
 
