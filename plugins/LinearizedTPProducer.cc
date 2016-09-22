@@ -1,3 +1,4 @@
+#if 0
 // -*- C++ -*-
 //
 // Package:    LinearizedTPProducer
@@ -197,3 +198,4 @@ LinearizedTPProducer::fillDescriptions(edm::ConfigurationDescriptions& descripti
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(LinearizedTPProducer);
+#endif
