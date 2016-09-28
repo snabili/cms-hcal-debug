@@ -10,6 +10,7 @@ f = r.TFile(infile)
 tps = f.Get("chainplotter/matches")
 
 c = r.TCanvas()
+c.SetLogz(True)
 c.SetRightMargin(c.GetRightMargin() * 1.5)
 c.SaveAs(outfile + '[')
 tps.Draw("RH_energy:TP_energy>>cmphb", "abs(ieta) <= 16", "COLZ")
