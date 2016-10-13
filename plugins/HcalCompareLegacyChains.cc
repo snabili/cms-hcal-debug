@@ -417,7 +417,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += 0.7 * hit.energy() / cosh(local_geo->getPosition().eta()) / count;
+            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / count;
          }
          matches_->Fill();
          fhits.erase(fh);
