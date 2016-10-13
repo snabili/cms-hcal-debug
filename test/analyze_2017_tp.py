@@ -1,13 +1,16 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("HFCALIB")
+from Configuration.AlCa.autoCond import autoCond
+from Configuration.StandardSequences.Eras import eras
+from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_Hcal2017Full
+
+process = cms.Process('PLOT', eras.Run2_2017_HCALdev)
 
 # Import of standard configurations
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond['run2_mc']
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
@@ -35,7 +38,6 @@ process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 process.load('Configuration.Geometry.GeometryExtended2017devReco_cff')
 process.load('Configuration.Geometry.GeometryExtended2017dev_cff')
 
-from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_Hcal2017Full
 customise_Hcal2017Full(process)
 
 process.TFileService = cms.Service("TFileService",
