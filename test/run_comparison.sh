@@ -21,7 +21,7 @@ run_ttbar() {
    cmsDriver.py step3  --conditions auto:$conditions -n $events --era $era --eventcontent RECOSIM,MINIAODSIM,DQM --runUnscheduled  -s RAW2DIGI,L1Reco,RECO,EI,PAT,VALIDATION:@standardValidation+@miniAODValidation,DQM:@standardDQM+@miniAODDQM --datatier GEN-SIM-RECO,MINIAODSIM,DQMIO --fileout=step3.root --filein=file:step2.root $geometry &> step3.log
 }
 
-run_ttbar 2017_HCALdev phase1_2017_hcaldev Run2_2017_HCALdev Extended2017dev &
+run_ttbar 2017_HCAL phase1_2017_realistic Run2_2017 Extended2017new &
 run_ttbar 2016_plain run2_mc Run2_2016 "" &
 
 wait
