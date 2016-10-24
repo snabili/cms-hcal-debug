@@ -67,6 +67,7 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
     cms.InputTag('hcalDigis'), cms.InputTag('hcalDigis'))
 process.simHcalTriggerPrimitiveDigis.inputUpgradeLabel = cms.VInputTag(
     cms.InputTag('hcalDigis'), cms.InputTag('hcalDigis'))
+process.simHcalTriggerPrimitiveDigis.parameters = cms.untracked.PSet(ADCThresholdHF=cms.uint32(1024))
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 process.simHcalTriggerPrimitiveDigis.upgradeHF = cms.bool(True)
 
