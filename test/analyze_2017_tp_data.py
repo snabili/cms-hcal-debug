@@ -74,7 +74,7 @@ process.simHcalTriggerPrimitiveDigis.upgradeHF = cms.bool(True)
 
 process.TFileService = cms.Service("TFileService",
                                    closeFileFast=cms.untracked.bool(True),
-                                   fileName=cms.string('analyze.root'))
+                                   fileName=cms.string('analyze_283104.root'))
 
 process.hcalDigis.InputLabel = cms.InputTag("source")
 process.analyzeRAW = cms.EDAnalyzer("AnalyzeTP",
