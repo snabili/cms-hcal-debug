@@ -14,7 +14,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2017_realistic', '
 # process.GlobalTag.globaltag = '80X_dataRun2_Express_v12'
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(1))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(10000))
 
 process.source = cms.Source(
     "HcalTBSource",
@@ -67,7 +67,8 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
     cms.InputTag('hcalDigis'), cms.InputTag('hcalDigis'))
 process.simHcalTriggerPrimitiveDigis.inputUpgradeLabel = cms.VInputTag(
     cms.InputTag('hcalDigis'), cms.InputTag('hcalDigis'))
-process.simHcalTriggerPrimitiveDigis.parameters = cms.untracked.PSet(ADCThresholdHF=cms.uint32(1024))
+process.simHcalTriggerPrimitiveDigis.parameters = cms.untracked.PSet(
+    ADCThresholdHF=cms.uint32(1024))
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 process.simHcalTriggerPrimitiveDigis.upgradeHF = cms.bool(True)
 
@@ -80,14 +81,19 @@ process.analyzeRAW = cms.EDAnalyzer("AnalyzeTP",
                                     triggerPrimitives=cms.InputTag("hcalDigis", "", ""))
 process.analyzeSIM = cms.EDAnalyzer("AnalyzeTP",
                                     triggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", ""))
+process.compare = cms.EDAnalyzer("CompareTP",
+                                 triggerPrimitives=cms.InputTag("hcalDigis"),
+                                 emulTriggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis"),
+                                 swapIphi=cms.bool(False))
 
 process.dump = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.p = cms.Path(
     process.hcalDigis *
-    process.dump *
+    # process.dump *
     process.simHcalTriggerPrimitiveDigis *
     process.analyzeRAW *
-    process.analyzeSIM)
+    process.analyzeSIM *
+    process.compare)
 
 # print process.dumpPython()
