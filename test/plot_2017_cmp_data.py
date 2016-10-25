@@ -37,6 +37,8 @@ for ieta in range(30, 42):
         binning = "32,0,16,64,0,32"
     else:
         binning = "16,0,8,32,0,16"
+    # When taking out the division by valid fiber count
+    # binning = ','.join(binning.split(',')[3:] * 2)
     tps.Draw("et:et_emul>>hist({})".format(binning), "iphi == 39 && ieta > 0 && abs(ieta) == {}".format(ieta), "COLZ")
     f1.Draw("same")
     f2.Draw("same")
