@@ -1,31 +1,28 @@
 import FWCore.ParameterSet.Config as cms
 
+from Configuration.AlCa.autoCond import autoCond
+from CondCore.CondDB.CondDB_cfi import CondDB
+from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1
+
 process = cms.Process("HFCALIB")
 
-## Import of standard configurations
+# Import of standard configurations
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-from Configuration.AlCa.autoCond import autoCond
 process.GlobalTag.globaltag = autoCond['run2_mc']
 
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(1000))
 
-process.source = cms.Source("PoolSource",
-        fileNames = cms.untracked.vstring(
+process.source = cms.Source(
+    "PoolSource",
+    fileNames=cms.untracked.vstring(
 
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/4431031E-9E7F-E511-9F42-0025905938A4.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/4C462F65-9F7F-E511-972A-0026189438A9.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/703E7EAB-9D7F-E511-B886-003048FFCBFC.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/8AF07AAB-9D7F-E511-B8B4-003048FFCBFC.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/962BEF7C-9D7F-E511-A2BB-0025905B85AA.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/C409A519-9E7F-E511-BD4C-0025905B8590.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/E8D41D6A-9F7F-E511-A10A-003048FFD740.root',
-                '/store/relval/CMSSW_7_6_0/RelValTTbar_13/GEN-SIM-DIGI-RAW-HLTDEBUG/76X_mcRun2_asymptotic_v11-v1/00000/EE048767-9E7F-E511-B1AA-0025905B8606.root',
+        '/store/mc/RunIISpring16DR80/SinglePiMinus_E1to1000_Eta5p2_13TeV_FlatRandom/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/0222BED7-F25B-E611-9CA3-1CC1DE18CFF0.root',
 
-        )
+    )
 )
 
 # process.out = cms.OutputModule( "PoolOutputModule",
@@ -34,16 +31,14 @@ process.source = cms.Source("PoolSource",
 # )
 # process.end = cms.EndPath(process.out)
 
-process.load('L1Trigger.RegionalCaloTrigger.rctDigis_cfi')
-process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag("simHcalTriggerPrimitiveDigis"))
-
+process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
+process.load("SimCalorimetry.Configuration.hcalDigiSequence_cff")
 process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
-process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalUnsuppressedDigis'), cms.InputTag('simHcalUnsuppressedDigis') )
+process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(cms.InputTag('simHcalUnsuppressedDigis'), cms.InputTag('simHcalUnsuppressedDigis'))
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
 process.load("Configuration.Geometry.GeometryExtended2016Reco_cff")
-from CondCore.CondDB.CondDB_cfi import CondDB
 
 process.CondDBSetup = CondDB.clone()
 delattr(process.CondDBSetup, 'connect')
@@ -64,21 +59,30 @@ delattr(process.CondDBSetup, 'connect')
 #      )
 # process.es_prefer_es_pool = cms.ESPrefer( "PoolDBESSource", "es_pool" )
 
-from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1
-customise_HcalPhase1(process)
+# customise_HcalPhase1(process)
 
 process.TFileService = cms.Service("TFileService",
-        closeFileFast = cms.untracked.bool(True),
-        fileName = cms.string('analyze.root'))
+                                   closeFileFast=cms.untracked.bool(True),
+                                   fileName=cms.string('analyze.root'))
 
 process.analyze = cms.EDAnalyzer("AnalyzeTP",
-        triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
+                                 triggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", "HFCALIB"))
 process.analyzeOld = cms.EDAnalyzer("AnalyzeTP",
-        triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HLT"))
+                                    triggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", "HLT"))
+process.analyzeRaw = cms.EDAnalyzer("AnalyzeTP",
+                                    triggerPrimitives=cms.InputTag("hcalDigis", "", ""))
 process.compare = cms.EDAnalyzer("CompareTP",
-        triggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HLT"),
-        emulTriggerPrimitives = cms.InputTag("simHcalTriggerPrimitiveDigis", "" , "HFCALIB"))
+                                 triggerPrimitives=cms.InputTag(
+                                     "simHcalTriggerPrimitiveDigis", "", "HLT"),
+                                 emulTriggerPrimitives=cms.InputTag(
+                                     "simHcalTriggerPrimitiveDigis", "", "HFCALIB"),
+                                 swapIphi=cms.bool(False))
 
-process.p = cms.Path(process.simHcalTriggerPrimitiveDigis * process.analyze * process.analyzeOld * process.compare)
+process.p = cms.Path(process.hcalDigis *
+                     process.simHcalTriggerPrimitiveDigis *
+                     process.analyze *
+                     process.analyzeOld *
+                     process.analyzeRaw *
+                     process.compare)
 
 # print process.dumpPython()
