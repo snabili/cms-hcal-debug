@@ -31,7 +31,7 @@ process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
 # process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag( cms.InputTag('simHcalDigis'), cms.InputTag('simHcalDigis') )
 process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 
-process.load('Configuration.Geometry.GeometryExtended2017newReco_cff')
+process.load('Configuration.Geometry.GeometryExtended2017Reco_cff')
 
 # customise_Hcal2017Full(process)
 # process.simHcalTriggerPrimitiveDigis.upgradeHE = cms.bool(True)
