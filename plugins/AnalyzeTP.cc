@@ -111,6 +111,9 @@ class AnalyzeTP : public edm::EDAnalyzer {
       TTree *ev_;
       double ev_tp_v0_et_;
       double ev_tp_v1_et_;
+      int ev_ntp_hb_;
+      int ev_ntp_he_;
+      int ev_ntp_hf_;
 };
 
 AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
@@ -137,6 +140,9 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    ev_->Branch("event", &event_);
    ev_->Branch("tp_v0_et", &ev_tp_v0_et_);
    ev_->Branch("tp_v1_et", &ev_tp_v1_et_);
+   ev_->Branch("ntp_hb", &ev_ntp_hb_);
+   ev_->Branch("ntp_he", &ev_ntp_he_);
+   ev_->Branch("ntp_hf", &ev_ntp_hf_);
 
    match_ = fs->make<TTree>("ms", "TP matches");
    match_->Branch("event", &event_);
@@ -178,6 +184,10 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    ev_tp_v0_et_ = 0.;
    ev_tp_v1_et_ = 0.;
 
+   ev_ntp_hb_ = 0;
+   ev_ntp_he_ = 0;
+   ev_ntp_hf_ = 0;
+
    ESHandle<HcalTrigTowerGeometry> tpd_geo;
    setup.get<CaloGeometryRecord>().get(tpd_geo);
 
@@ -206,6 +216,13 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          continue;
 
       tps_->Fill();
+
+      if (abs(tp_ieta_) <= 16)
+         ++ev_ntp_hb_;
+      else if (abs(tp_ieta_) <= 29)
+         ++ev_ntp_he_;
+      else
+         ++ev_ntp_hf_;
 
       if (tp_version_ == 0 and abs(tp_ieta_) >= 29) {
          ev_tp_v0_et_ += tp_et_;
