@@ -174,15 +174,8 @@ HcalCompareLegacyChains::~HcalCompareLegacyChains() {}
 double
 HcalCompareLegacyChains::get_cosh(const HcalDetId& id)
 {
-   const auto *sub_geo = gen_geo_->getSubdetectorGeometry(id);
-   const auto *local_geo = sub_geo->getGeometry(id);
-   double eta = 666;
-   if (local_geo) {
-      eta = local_geo->getPosition().eta();
-   } else {
-      std::cout << ">> Local geometry not present for " << id << std::endl;
-      eta = gen_geo_->getPosition(id).eta();
-   }
+   const auto *sub_geo = dynamic_cast<const HcalGeometry*>(gen_geo_->getSubdetectorGeometry(id));
+   auto eta = sub_geo->getPosition(id).eta();
    return cosh(eta);
 }
 
