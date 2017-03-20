@@ -11,6 +11,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2017_realistic', '')
+print("Using GlobalTag {}".format(process.GlobalTag.globaltag.value()))
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(1000))
@@ -34,10 +35,6 @@ process.simHcalTriggerPrimitiveDigis.FrontEndFormatError = cms.bool(False)
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load("EventFilter.HcalRawToDigi.HcalRawToDigi_cfi")
 
-# customise_Hcal2017Full(process)
-# process.simHcalTriggerPrimitiveDigis.upgradeHE = cms.bool(True)
-# process.simHcalTriggerPrimitiveDigis.upgradeHF = cms.bool(True)
-
 process.TFileService = cms.Service("TFileService",
                                    closeFileFast=cms.untracked.bool(True),
                                    fileName=cms.string('analyze.root'))
@@ -47,13 +44,9 @@ process.analyze = cms.EDAnalyzer("AnalyzeTP",
 process.analyzeRaw = cms.EDAnalyzer("AnalyzeTP",
                                     triggerPrimitives=cms.InputTag("hcalDigis", "", ""))
 process.chainplotter = cms.EDAnalyzer("HcalCompareLegacyChains",
-                                      triggerPrimitives=cms.InputTag(
-                                          'simHcalTriggerPrimitiveDigis', '', ''),
+                                      triggerPrimitives=cms.InputTag('simHcalTriggerPrimitiveDigis', '', ''),
                                       recHits=cms.VInputTag('hbheprereco', 'hfreco'),
-                                      dataFrames=cms.VInputTag(
-                                          cms.InputTag("hcalDigis", "", ""),
-                                          cms.InputTag("hcalDigis", "", "")
-                                      ),
+                                      dataFrames=cms.VInputTag(cms.InputTag("hcalDigis", "", ""), cms.InputTag("hcalDigis", "", "")),
                                       swapIphi=cms.bool(False)
                                       )
 
