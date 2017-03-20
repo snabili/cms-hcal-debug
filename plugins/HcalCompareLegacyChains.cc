@@ -38,33 +38,17 @@
 #include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
 #include "CalibFormats/HcalObjects/interface/HcalDbService.h"
 
-#include "CondFormats/DataRecord/interface/HcalChannelQualityRcd.h"
-#include "CondFormats/DataRecord/interface/L1CaloGeometryRecord.h"
-#include "CondFormats/HcalObjects/interface/HcalChannelQuality.h"
-#include "CondFormats/L1TObjects/interface/L1CaloGeometry.h"
-
-#include "CondFormats/L1TObjects/interface/L1RCTParameters.h"
-#include "CondFormats/DataRecord/interface/L1RCTParametersRcd.h"
-#include "CondFormats/L1TObjects/interface/L1CaloHcalScale.h"
-#include "CondFormats/DataRecord/interface/L1CaloHcalScaleRcd.h"
-
-#include "DataFormats/Common/interface/SortedCollection.h"
-#include "DataFormats/CaloTowers/interface/CaloTower.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "DataFormats/HcalDigi/interface/HcalTriggerPrimitiveDigi.h"
 #include "DataFormats/HcalDetId/interface/HcalTrigTowerDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalRecHit/interface/HBHERecHit.h"
 #include "DataFormats/HcalRecHit/interface/HFRecHit.h"
-#include "DataFormats/L1CaloTrigger/interface/L1CaloCollections.h"
 
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/HcalTowerAlgo/interface/HcalGeometry.h"
 #include "Geometry/HcalTowerAlgo/interface/HcalTrigTowerGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
-
-#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputer.h"
-#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputerRcd.h"
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -105,9 +89,6 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       int tp_ieta_;
       int tp_iphi_;
       int tp_soi_;
-      int tp_depth_max_;
-      int tp_depth_start_;
-      int tp_depth_end_;
 
       double tpsplit_energy_;
       double tpsplit_oot_;
@@ -157,9 +138,6 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    tps_->Branch("ieta", &tp_ieta_);
    tps_->Branch("iphi", &tp_iphi_);
    tps_->Branch("soi", &tp_soi_);
-   tps_->Branch("depth_max", &tp_depth_max_);
-   tps_->Branch("depth_start", &tp_depth_start_);
-   tps_->Branch("depth_end", &tp_depth_end_);
 
    tpsplit_ = fs->make<TTree>("tpsplit", "Trigger primitives");
    tpsplit_->Branch("et", &tpsplit_energy_);
@@ -274,14 +252,6 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    edm::ESHandle<CaloGeometry> gen_geo;
    setup.get<CaloGeometryRecord>().get(gen_geo);
 
-   edm::ESHandle<HcalChannelQuality> h_status;
-   // setup.get<HcalChannelQualityRcd>().get(h_status);
-   // const HcalChannelQuality *status = h_status.product();
-
-   // edm::ESHandle<HcalSeverityLevelComputer> h_comp;
-   // setup.get<HcalSeverityLevelComputerRcd>().get(h_comp);
-   // const HcalSeverityLevelComputer *comp = h_comp.product();
-
    if (hits.isValid()) {
       for (auto& hit: *(hits.product())) {
          HcalDetId id(hit.id());
@@ -317,10 +287,6 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    ESHandle<CaloTPGTranscoder> decoder;
    setup.get<CaloTPGRecord>().get(decoder);
 
-   // edm::ESHandle<L1RCTParameters> rct;
-   // setup.get<L1RCTParametersRcd>().get(rct);
-   // const L1RCTParameters* r = rct.product();
-
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
       id = HcalTrigTowerDetId(id.ieta(), id.iphi(), 1, id.version());
@@ -332,44 +298,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       tp_iphi_ = id.iphi();
       tp_soi_ = digi.SOI_compressedEt();
 
-      tp_depth_start_ = -1;
-      tp_depth_end_ = -1;
-      tp_depth_max_ = -1;
-      // int et_max = 0;
-      // int et_sum = 0;
-      // for (unsigned int i = 1; i < 6; ++i) {
-      //    int depth = digi.SOI_depth_linear(i);
-      //    if (depth > 0) {
-      //       et_sum += depth;
-      //       tp_depth_end_ = i;
-      //       if (tp_depth_start_ < 0)
-      //          tp_depth_start_ = i;
-      //       if (depth > et_max) {
-      //          tp_depth_max_ = i;
-      //          et_max = depth;
-      //       }
-      //    }
-      // }
       tps_->Fill();
-
-      // if (et_sum > 0) {
-      //    /* std::cout << "vvv" << std::endl; */
-      //    for (unsigned int i = 1; i < 6; ++i) {
-      //       int depth = digi.SOI_depth_linear(i);
-      //       tpsplit_energy_ = tp_energy_ * float(depth) / et_sum;
-      //       tpsplit_oot_ = tp_energy_ * float(digi.SOI_oot_linear(i)) / et_sum;
-      //       /* std::cout << tpsplit_energy_ << std::endl; */
-      //       tpsplit_ieta_ = tp_ieta_;
-      //       tpsplit_iphi_ = tp_iphi_;
-      //       tpsplit_depth_ = i;
-      //       tpsplit_ettot_ = tp_energy_;
-      //       tpsplit_rise_avg_ = digi.SOI_rising_avg(i);
-      //       tpsplit_rise_rms_ = digi.SOI_rising_rms(i);
-      //       tpsplit_fall_avg_ = digi.SOI_falling_avg(i);
-      //       tpsplit_fall_rms_ = digi.SOI_falling_rms(i);
-      //       tpsplit_->Fill();
-      //    }
-      // }
    }
 
    for (const auto& pair: tpdigis) {
