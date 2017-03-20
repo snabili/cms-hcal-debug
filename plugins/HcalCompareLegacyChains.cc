@@ -68,12 +68,16 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
    private:
       virtual void analyze(const edm::Event&, const edm::EventSetup&);
 
+      double get_cosh(const HcalDetId&);
+
       // ----------member data ---------------------------
       bool first_;
 
       std::vector<edm::InputTag> frames_;
       edm::InputTag digis_;
       std::vector<edm::InputTag> rechits_;
+
+      edm::ESHandle<CaloGeometry> gen_geo_;
 
       bool swap_iphi_;
 
@@ -167,6 +171,21 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
 
 HcalCompareLegacyChains::~HcalCompareLegacyChains() {}
 
+double
+HcalCompareLegacyChains::get_cosh(const HcalDetId& id)
+{
+   const auto *sub_geo = gen_geo_->getSubdetectorGeometry(id);
+   const auto *local_geo = sub_geo->getGeometry(id);
+   double eta = 666;
+   if (local_geo) {
+      eta = local_geo->getPosition().eta();
+   } else {
+      std::cout << ">> Local geometry not present for " << id << std::endl;
+      eta = gen_geo_->getPosition(id).eta();
+   }
+   return cosh(eta);
+}
+
 void
 HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
@@ -249,14 +268,12 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       /* return; */
    }
 
-   edm::ESHandle<CaloGeometry> gen_geo;
-   setup.get<CaloGeometryRecord>().get(gen_geo);
+   setup.get<CaloGeometryRecord>().get(gen_geo_);
 
    if (hits.isValid()) {
       for (auto& hit: *(hits.product())) {
          HcalDetId id(hit.id());
-         const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
-         ev_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta());
+         ev_rh_energy_ += hit.energy() / get_cosh(id);
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
@@ -269,8 +286,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    if (hfhits.isValid()) {
       for (auto& hit: *(hfhits.product())) {
          HcalDetId id(hit.id());
-         const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
-         ev_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta());
+         ev_rh_energy_ += hit.energy() / get_cosh(id);
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
@@ -331,22 +347,20 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       if (rh != rhits.end()) {
          for (const auto& hit: rh->second) {
             HcalDetId id(hit.id());
-            const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / count;
+            mt_rh_energy_ += hit.energy() / get_cosh(id) / count;
          }
          matches_->Fill();
          rhits.erase(rh);
       } else if (fh != fhits.end()) {
          for (const auto& hit: fh->second) {
             HcalDetId id(hit.id());
-            const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / count;
+            mt_rh_energy_ += hit.energy() / get_cosh(id) / count;
          }
          matches_->Fill();
          fhits.erase(fh);
