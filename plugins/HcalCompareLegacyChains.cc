@@ -285,7 +285,8 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    if (hits.isValid()) {
       for (auto& hit: *(hits.product())) {
          HcalDetId id(hit.id());
-         ev_rh_energy_ += hit.energy() / cosh(gen_geo.product()->getPosition(id).eta());
+         const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
+         ev_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta());
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
@@ -401,20 +402,22 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       if (rh != rhits.end()) {
          for (const auto& hit: rh->second) {
             HcalDetId id(hit.id());
+            const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += hit.energy() / cosh(gen_geo->getPosition(id).eta()) / count;
+            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / count;
          }
          matches_->Fill();
          rhits.erase(rh);
       } else if (fh != fhits.end()) {
          for (const auto& hit: fh->second) {
             HcalDetId id(hit.id());
+            const auto *local_geo = gen_geo->getSubdetectorGeometry(id)->getGeometry(id);
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += hit.energy() / cosh(gen_geo->getPosition(id).eta()) / count;
+            mt_rh_energy_ += hit.energy() / cosh(local_geo->getPosition().eta()) / count;
          }
          matches_->Fill();
          fhits.erase(fh);
