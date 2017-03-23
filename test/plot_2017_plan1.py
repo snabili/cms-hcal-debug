@@ -71,17 +71,18 @@ tps.Draw("(TP_energy-RH_energy):ieta>>diffieta2", "(TP_energy>0) * (abs(TP_energ
 r.gDirectory.Get("diffieta2").SetTitle("Energy Difference RH vs TP;ieta;TrigPrim E_{T} - RecHit E_{T}")
 c.SaveAs(outfile)
 
-tps.Draw("RH_energy/TP_energy:ieta>>diffieta3", "TP_energy>1", "COLZ")
-r.gDirectory.Get("diffieta3").SetTitle("Energy Difference RH vs TP;ieta;RecHit E_{T} / TrigPrim E_{T}")
-c.SaveAs(outfile)
+for cut in "1 2 5".split():
+    tps.Draw("RH_energy/TP_energy:ieta>>diffieta3", "TP_energy>0 && RH_energy>{}".format(cut), "COLZ")
+    r.gDirectory.Get("diffieta3").SetTitle("Energy Difference RH vs TP (RH E_{T} > " + cut + ");ieta;RecHit E_{T} / TrigPrim E_{T}")
+    c.SaveAs(outfile)
 
-tps.Draw("RH_energy/TP_energy:ieta>>diffieta4", "(TP_energy>1) * " + hep17, "COLZ")
-r.gDirectory.Get("diffieta4").SetTitle("Energy Difference RH vs TP (HEP17);ieta;RecHit E_{T} / TrigPrim E_{T}")
-c.SaveAs(outfile)
+    tps.Draw("RH_energy/TP_energy:ieta>>diffieta4", "(TP_energy>0 && RH_energy>{}) * ".format(cut) + hep17, "COLZ")
+    r.gDirectory.Get("diffieta4").SetTitle("Energy Difference RH vs TP (HEP17) (RH E_{T} > " + cut + ");ieta;RecHit E_{T} / TrigPrim E_{T}")
+    c.SaveAs(outfile)
 
-tps.Draw("RH_energy/TP_energy:ieta>>diffieta5", "(TP_energy>1) * !" + hep17, "COLZ")
-r.gDirectory.Get("diffieta5").SetTitle("Energy Difference RH vs TP (not HEP17);ieta;RecHit E_{T} / TrigPrim E_{T}")
-c.SaveAs(outfile)
+    tps.Draw("RH_energy/TP_energy:ieta>>diffieta5", "(TP_energy>0 && RH_energy>{}) * !".format(cut) + hep17, "COLZ")
+    r.gDirectory.Get("diffieta5").SetTitle("Energy Difference RH vs TP (not HEP17) (RH E_{T} > " + cut + ");ieta;RecHit E_{T} / TrigPrim E_{T}")
+    c.SaveAs(outfile)
 
 tps.Draw("RH_energy:TP_energy>>cmphb(100, 0, 200, 100, 0, 200)", "abs(ieta) <= 16", "COLZ")
 f1.Draw("same")
@@ -97,4 +98,15 @@ tps.Draw("RH_energy:TP_energy/0.7>>cmphf(80, 0, 80, 80, 0, 80)", "abs(ieta) > 29
 f1.Draw("same")
 r.gDirectory.Get("cmphf").SetTitle("HF energy comparison;TrigPrim E_{T} / 0.7;RecHit E_{T}")
 c.SaveAs(outfile)
+
+for i in range(1, 42):
+    tps.Draw("RH_energy:TP_energy>>cmp(100, 0, 200, 100, 0, 200)", "ieta == {}".format(i), "COLZ")
+    f1.Draw("same")
+    r.gDirectory.Get("cmp").SetTitle("Energy comparison (i#eta {});TrigPrim E_{{T}};RecHit E_{{T}}".format(i))
+    c.SaveAs(outfile)
+    tps.Draw("RH_energy:TP_energy>>cmp(100, 0, 200, 100, 0, 200)", "ieta == -{}".format(i), "COLZ")
+    f1.Draw("same")
+    r.gDirectory.Get("cmp").SetTitle("Energy comparison (i#eta -{});TrigPrim E_{{T}};RecHit E_{{T}}".format(i))
+    c.SaveAs(outfile)
+
 c.SaveAs(outfile + ']')
