@@ -93,9 +93,14 @@ for m in "M0 M2 M3".split():
     r.gDirectory.Get("cmphb").SetTitle("HB energy comparison;TrigPrim E_{T};RecHit E_{T}")
     c.SaveAs(outfile)
 
-    tps.Draw(rh_en + ":TP_energy>>cmphe(100, 0, 100, 100, 0, 100)", "abs(ieta) > 16 && abs(ieta) < 29", "COLZ")
+    tps.Draw(rh_en + ":TP_energy>>cmphe(100, 0, 100, 100, 0, 100)", "(abs(ieta)>16 && abs(ieta)<29) * " + nhep17, "COLZ")
     f1.Draw("same")
-    r.gDirectory.Get("cmphe").SetTitle("HE energy comparison;TrigPrim E_{T};RecHit E_{T}")
+    r.gDirectory.Get("cmphe").SetTitle("HE (no HEP17) energy comparison;TrigPrim E_{T};RecHit E_{T}")
+    c.SaveAs(outfile)
+
+    tps.Draw(rh_en + ":TP_energy>>cmphep17(100, 0, 100, 100, 0, 100)", hep17, "COLZ")
+    f1.Draw("same")
+    r.gDirectory.Get("cmphep17").SetTitle("HEP17 energy comparison;TrigPrim E_{T};RecHit E_{T}")
     c.SaveAs(outfile)
 
     tps.Draw(rh_en + ":TP_energy/0.7>>cmphf(80, 0, 80, 80, 0, 80)", "abs(ieta) > 29", "COLZ")
