@@ -120,6 +120,7 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       int mt_ieta_;
       int mt_iphi_;
       int mt_version_;
+      int mt_tp_soi_;
 };
 
 HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config) :
@@ -175,6 +176,7 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    matches_->Branch("ieta", &mt_ieta_);
    matches_->Branch("iphi", &mt_iphi_);
    matches_->Branch("tp_version", &mt_version_);
+   matches_->Branch("tp_soi", &mt_tp_soi_);
 }
 
 HcalCompareLegacyChains::~HcalCompareLegacyChains() {}
@@ -346,9 +348,12 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       mt_iphi_ = new_id.iphi();
       mt_version_ = new_id.version();
       mt_tp_energy_ = 0;
+      mt_tp_soi_ = 0;
 
-      for (const auto& tp: pair.second)
+      for (const auto& tp: pair.second) {
          mt_tp_energy_ += decoder->hcaletValue(new_id, tp.t0());
+         mt_tp_soi_ = tp.SOI_compressedEt();
+      }
       mt_rh_energy0_ = 0.;
       mt_rh_energy2_ = 0.;
       mt_rh_energy3_ = 0.;
