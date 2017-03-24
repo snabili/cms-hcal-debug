@@ -105,12 +105,16 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       double tpsplit_fall_avg_;
       double tpsplit_fall_rms_;
 
-      double ev_rh_energy_;
+      double ev_rh_energy0_;
+      double ev_rh_energy2_;
+      double ev_rh_energy3_;
       double ev_tp_energy_;
       int ev_rh_unmatched_;
       int ev_tp_unmatched_;
 
-      double mt_rh_energy_;
+      double mt_rh_energy0_;
+      double mt_rh_energy2_;
+      double mt_rh_energy3_;
       double mt_tp_energy_;
 
       int mt_ieta_;
@@ -156,13 +160,17 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    tpsplit_->Branch("fall_rms", &tpsplit_fall_rms_);
 
    events_ = fs->make<TTree>("events", "Event quantities");
-   events_->Branch("RH_energy", &ev_rh_energy_);
+   events_->Branch("RH_energyM0", &ev_rh_energy0_);
+   events_->Branch("RH_energyM2", &ev_rh_energy2_);
+   events_->Branch("RH_energyM3", &ev_rh_energy3_);
    events_->Branch("TP_energy", &ev_tp_energy_);
    events_->Branch("RH_unmatched", &ev_rh_unmatched_);
    events_->Branch("TP_unmatched", &ev_tp_unmatched_);
 
    matches_ = fs->make<TTree>("matches", "Matched RH and TP");
-   matches_->Branch("RH_energy", &mt_rh_energy_);
+   matches_->Branch("RH_energyM0", &mt_rh_energy0_);
+   matches_->Branch("RH_energyM2", &mt_rh_energy2_);
+   matches_->Branch("RH_energyM3", &mt_rh_energy3_);
    matches_->Branch("TP_energy", &mt_tp_energy_);
    matches_->Branch("ieta", &mt_ieta_);
    matches_->Branch("iphi", &mt_iphi_);
@@ -230,7 +238,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    // Matching stuff
    // ==============
 
-   ev_rh_energy_ = 0.;
+   ev_rh_energy0_ = 0.;
+   ev_rh_energy2_ = 0.;
+   ev_rh_energy3_ = 0.;
    ev_rh_unmatched_ = 0.;
    ev_tp_energy_ = 0.;
    ev_tp_unmatched_ = 0.;
@@ -266,7 +276,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    if (hits.isValid()) {
       for (auto& hit: *(hits.product())) {
          HcalDetId id(hit.id());
-         ev_rh_energy_ += hit.energy() / get_cosh(id);
+         ev_rh_energy0_ += hit.eraw() / get_cosh(id);
+         ev_rh_energy2_ += hit.energy() / get_cosh(id);
+         ev_rh_energy3_ += hit.eaux() / get_cosh(id);
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
@@ -279,7 +291,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    if (hfhits.isValid()) {
       for (auto& hit: *(hfhits.product())) {
          HcalDetId id(hit.id());
-         ev_rh_energy_ += hit.energy() / get_cosh(id);
+         ev_rh_energy0_ += hit.energy() / get_cosh(id);
+         ev_rh_energy2_ += hit.energy() / get_cosh(id);
+         ev_rh_energy3_ += hit.energy() / get_cosh(id);
 
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
@@ -335,7 +349,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
       for (const auto& tp: pair.second)
          mt_tp_energy_ += decoder->hcaletValue(new_id, tp.t0());
-      mt_rh_energy_ = 0.;
+      mt_rh_energy0_ = 0.;
+      mt_rh_energy2_ = 0.;
+      mt_rh_energy3_ = 0.;
 
       if (rh != rhits.end()) {
          for (const auto& hit: rh->second) {
@@ -343,7 +359,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += hit.energy() / get_cosh(id) / count;
+            mt_rh_energy0_ += hit.eraw() / get_cosh(id) / count;
+            mt_rh_energy2_ += hit.energy() / get_cosh(id) / count;
+            mt_rh_energy3_ += hit.eaux() / get_cosh(id) / count;
          }
          matches_->Fill();
          rhits.erase(rh);
@@ -353,7 +371,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
             auto tower_ids = tpd_geo.towerIds(id);
             auto count = std::count_if(std::begin(tower_ids), std::end(tower_ids),
                   [&](const auto& t) { return t.version() == new_id.version(); });
-            mt_rh_energy_ += hit.energy() / get_cosh(id) / count;
+            mt_rh_energy0_ += hit.energy() / get_cosh(id) / count;
+            mt_rh_energy2_ += hit.energy() / get_cosh(id) / count;
+            mt_rh_energy3_ += hit.energy() / get_cosh(id) / count;
          }
          matches_->Fill();
          fhits.erase(fh);
