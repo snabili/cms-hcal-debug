@@ -20,6 +20,7 @@
 
 // system include files
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -97,6 +98,10 @@ class CompareTP : public edm::EDAnalyzer {
       int tp_version_;
       int tp_soi_;
       int tp_soi_emul_;
+      int tp_npresamples_;
+      int tp_npresamples_emul_;
+      std::array<int, 10> tp_adc_;
+      std::array<int, 10> tp_adc_emul_;
       double tp_et_;
       double tp_et_emul_;
       int tp_fg0_;
@@ -124,12 +129,19 @@ CompareTP::CompareTP(const edm::ParameterSet& config) :
    tps_->Branch("version", &tp_version_);
    tps_->Branch("soi", &tp_soi_);
    tps_->Branch("soi_emul", &tp_soi_emul_);
+   tps_->Branch("npresamples", &tp_npresamples_);
+   tps_->Branch("npresamples_emul", &tp_npresamples_emul_);
    tps_->Branch("et", &tp_et_);
    tps_->Branch("et_emul", &tp_et_emul_);
    tps_->Branch("fg0", &tp_fg0_);
    tps_->Branch("fg1", &tp_fg1_);
    tps_->Branch("fg0_emul", &tp_fg0_emul_);
    tps_->Branch("fg1_emul", &tp_fg1_emul_);
+
+   for (unsigned int i = 0; i < tp_adc_.size(); ++i)
+      tps_->Branch(("adc" + std::to_string(i)).c_str(), (int*) &(tp_adc_[i]));
+   for (unsigned int i = 0; i < tp_adc_emul_.size(); ++i)
+      tps_->Branch(("adc" + std::to_string(i) + "_emul").c_str(), (int*) &(tp_adc_emul_[i]));
 }
 
 CompareTP::~CompareTP() {}
@@ -193,14 +205,20 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       digi_map::const_iterator digi;
       if ((digi = ds.find(id)) != ds.end()) {
          tp_soi_ = digi->second.SOI_compressedEt();
+         tp_npresamples_ = digi->second.presamples();
          tp_et_ = decoder->hcaletValue(id, digi->second.t0());
          tp_fg0_ = digi->second.t0().fineGrain(0);
          tp_fg1_ = digi->second.t0().fineGrain(1);
+         for (unsigned int i = 0; i < tp_adc_.size(); ++i)
+            tp_adc_[i] = digi->second[i].compressedEt();
       } else {
          tp_soi_ = 0;
+         tp_npresamples_ = 0;
          tp_et_ = 0;
          tp_fg0_ = 0;
          tp_fg1_ = 0;
+         for (unsigned int i = 0; i < tp_adc_.size(); ++i)
+            tp_adc_[i] = 0;
       }
       auto new_id(id);
       if (swap_iphi_ and id.version() == 1 and id.ieta() > 28 and id.ieta() < 40) {
@@ -211,14 +229,20 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       }
       if ((digi = eds.find(new_id)) != eds.end()) {
          tp_soi_emul_ = digi->second.SOI_compressedEt();
+         tp_npresamples_emul_ = digi->second.presamples();
          tp_et_emul_ = decoder->hcaletValue(id, digi->second.t0());
          tp_fg0_emul_ = digi->second.t0().fineGrain(0);
          tp_fg1_emul_ = digi->second.t0().fineGrain(1);
+         for (unsigned int i = 0; i < tp_adc_emul_.size(); ++i)
+            tp_adc_emul_[i] = digi->second[i].compressedEt();
       } else {
          tp_soi_emul_ = 0;
+         tp_npresamples_emul_ = 0;
          tp_et_emul_ = 0;
          tp_fg0_emul_ = 0;
          tp_fg1_emul_ = 0;
+         for (unsigned int i = 0; i < tp_adc_emul_.size(); ++i)
+            tp_adc_emul_[i] = 0;
       }
       tps_->Fill();
    }
