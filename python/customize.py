@@ -13,32 +13,34 @@ def add_path(process):
         process.schedule.append(process.tpCheck)
 
 
-def analyze_raw_tp(process):
+def analyze_tp(process, name, tag):
     add_fileservice(process)
     add_path(process)
     process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
-    process.analyzeRaw = cms.EDAnalyzer("AnalyzeTP",
-                                        triggerPrimitives=cms.InputTag("hcalDigis", "", ""))
-    process.tpCheck *= process.analyzeRaw
+    setattr(process, name, cms.EDAnalyzer("AnalyzeTP",
+                                          triggerPrimitives=cms.InputTag(tag, "", "")))
+    process.tpCheck *= getattr(process, name)
     return process
 
 
+def analyze_raw_tp(process):
+    return analyze_tp(process, 'analyzeRaw', 'hcalDigis')
+
+
 def analyze_reemul_tp(process):
+    return analyze_tp(process, 'analyzeReemul', 'simHcalTriggerPrimitiveDigis')
+
+
+def compare_tp(process, name, tag1, tag2):
     add_fileservice(process)
     add_path(process)
-    process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
-    process.analyzeReemul = cms.EDAnalyzer("AnalyzeTP",
-                                           triggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", process.name_()))
-    process.tpCheck *= process.analyzeReemul
+    setattr(process, name, cms.EDAnalyzer("CompareTP",
+                                          swapIphi=cms.bool(False),
+                                          triggerPrimitives=cms.InputTag(tag1, "", process.name_()),
+                                          emulTriggerPrimitives=cms.InputTag(tag2, "", process.name_())))
+    process.tpCheck *= getattr(process, name)
     return process
 
 
 def compare_raw_reemul_tp(process):
-    add_fileservice(process)
-    add_path(process)
-    process.compare = cms.EDAnalyzer("CompareTP",
-                                     swapIphi=cms.bool(False),
-                                     triggerPrimitives=cms.InputTag("hcalDigis", "", process.name_()),
-                                     emulTriggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", process.name_()))
-    process.tpCheck *= process.compare
-    return process
+    return compare_tp(process, 'compare', 'hcalDigis', 'simHcalTriggerPrimitiveDigis')
