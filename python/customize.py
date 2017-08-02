@@ -13,14 +13,36 @@ def add_path(process):
         process.schedule.append(process.tpCheck)
 
 
+def add_reemul(process):
+    process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
+    add_path(process)
+    try:
+        process.tpCheck.index(process.simHcalTriggerPrimitiveDigis)
+    except ValueError:
+        process.tpCheck *= process.simHcalTriggerPrimitiveDigis
+
+
+def add_l1t(process):
+    process.load("EventFilter.L1TXRawToDigi.caloLayer1Stage2Digis_cfi")
+    add_path(process)
+    try:
+        process.tpCheck.index(process.l1tCaloLayer1Digis)
+    except ValueError:
+        process.tpCheck *= process.l1tCaloLayer1Digis
+
+
 def analyze_tp(process, name, tag):
     add_fileservice(process)
     add_path(process)
-    process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
     setattr(process, name, cms.EDAnalyzer("AnalyzeTP",
                                           triggerPrimitives=cms.InputTag(tag, "", "")))
     process.tpCheck *= getattr(process, name)
     return process
+
+
+def analyze_l1t_tp(process):
+    add_l1t(process)
+    return analyze_tp(process, 'analyzeL1T', 'l1tCaloLayer1Digis')
 
 
 def analyze_raw_tp(process):
@@ -28,6 +50,7 @@ def analyze_raw_tp(process):
 
 
 def analyze_reemul_tp(process):
+    add_reemul(process)
     return analyze_tp(process, 'analyzeReemul', 'simHcalTriggerPrimitiveDigis')
 
 
@@ -43,4 +66,11 @@ def compare_tp(process, name, tag1, tag2):
 
 
 def compare_raw_reemul_tp(process):
+    add_reemul(process)
     return compare_tp(process, 'compare', 'hcalDigis', 'simHcalTriggerPrimitiveDigis')
+
+
+def compare_l1t_reemul_tp(process):
+    add_l1t(process)
+    add_reemul(process)
+    return compare_tp(process, 'compareL1T', 'l1tCaloLayer1Digis', 'simHcalTriggerPrimitiveDigis')

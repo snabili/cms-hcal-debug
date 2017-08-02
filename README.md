@@ -35,3 +35,18 @@ Use as input to the `cmsDriver.py` command:
       --customise Debug/HcalDebug/customize.analyze_reemul_tp \
       --filein das:/RelValTTbarLepton_13/CMSSW_9_0_0_pre6-90X_upgrade2017_realistic_v15-v1/GEN-SIM-DIGI-RAW \
       -n 1000
+
+## From Data, Using L1T Digis
+
+Using a run with HF FG bit mis-matches between L1T inputs (HCAL RAW does
+not include FG bits) and re-emulation:
+
+    cmsDriver.py analyze \
+      --data --conditions auto:run2_data \
+      -s RAW2DIGI --geometry DB:Extended --era Run2_2017 \
+      --customise Debug/HcalDebug/customize.analyze_l1t_tp \
+      --customise Debug/HcalDebug/customize.analyze_raw_tp \
+      --customise Debug/HcalDebug/customize.analyze_reemul_tp \
+      --customise Debug/HcalDebug/customize.compare_l1t_reemul_tp \
+      --filein /store/data/Run2017C/HcalNZS/RAW/v1/000/299/844/00000/AE36B18A-5271-E711-A223-02163E013895.root,/store/data/Run2017C/HcalNZS/RAW/v1/000/299/844/00000/46B78BA1-5271-E711-8820-02163E01A60E.root \
+      -n -1
