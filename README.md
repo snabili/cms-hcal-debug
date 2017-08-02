@@ -48,5 +48,6 @@ not include FG bits) and re-emulation:
       --customise Debug/HcalDebug/customize.analyze_raw_tp \
       --customise Debug/HcalDebug/customize.analyze_reemul_tp \
       --customise Debug/HcalDebug/customize.compare_l1t_reemul_tp \
+      --customise Debug/HcalDebug/customize.use_data_reemul_tp \
       --filein /store/data/Run2017C/HcalNZS/RAW/v1/000/299/844/00000/AE36B18A-5271-E711-A223-02163E013895.root,/store/data/Run2017C/HcalNZS/RAW/v1/000/299/844/00000/46B78BA1-5271-E711-8820-02163E01A60E.root \
       -n -1

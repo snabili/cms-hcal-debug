@@ -74,3 +74,10 @@ def compare_l1t_reemul_tp(process):
     add_l1t(process)
     add_reemul(process)
     return compare_tp(process, 'compareL1T', 'l1tCaloLayer1Digis', 'simHcalTriggerPrimitiveDigis')
+
+
+def use_data_reemul_tp(process):
+    add_reemul(process)
+    process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag('hcalDigis', 'hcalDigis')
+    process.simHcalTriggerPrimitiveDigis.inputUpgradeLabel = cms.VInputTag('hcalDigis', 'hcalDigis')
+    return process
