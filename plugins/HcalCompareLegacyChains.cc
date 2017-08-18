@@ -33,6 +33,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "CondFormats/DataRecord/interface/HcalChannelQualityRcd.h"
+
 #include "CalibFormats/CaloTPG/interface/CaloTPGTranscoder.h"
 #include "CalibFormats/CaloTPG/interface/CaloTPGRecord.h"
 #include "CalibFormats/HcalObjects/interface/HcalDbRecord.h"
@@ -50,6 +52,9 @@
 #include "Geometry/HcalTowerAlgo/interface/HcalTrigTowerGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 
+#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputer.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/HcalSeverityLevelComputerRcd.h"
+
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TString.h"
@@ -66,7 +71,8 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
    private:
-      virtual void analyze(const edm::Event&, const edm::EventSetup&);
+      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+      virtual void beginLuminosityBlock(const edm::LuminosityBlock&, const edm::EventSetup&) override;
 
       double get_cosh(const HcalDetId&);
 
@@ -121,6 +127,11 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       int mt_iphi_;
       int mt_version_;
       int mt_tp_soi_;
+
+      int max_severity_;
+
+      const HcalChannelQuality* status_;
+      const HcalSeverityLevelComputer* comp_;
 };
 
 HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config) :
@@ -129,7 +140,8 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    frames_(config.getParameter<std::vector<edm::InputTag>>("dataFrames")),
    digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
    rechits_(config.getParameter<std::vector<edm::InputTag>>("recHits")),
-   swap_iphi_(config.getParameter<bool>("swapIphi"))
+   swap_iphi_(config.getParameter<bool>("swapIphi")),
+   max_severity_(config.getParameter<int>("maxSeverity"))
 {
    consumes<HcalTrigPrimDigiCollection>(digis_);
    consumes<HBHEDigiCollection>(frames_[0]);
@@ -187,6 +199,17 @@ HcalCompareLegacyChains::get_cosh(const HcalDetId& id)
    const auto *sub_geo = dynamic_cast<const HcalGeometry*>(gen_geo_->getSubdetectorGeometry(id));
    auto eta = sub_geo->getPosition(id).eta();
    return cosh(eta);
+}
+
+void
+HcalCompareLegacyChains::beginLuminosityBlock(const edm::LuminosityBlock& lumi, const edm::EventSetup& setup)
+{
+   edm::ESHandle<HcalChannelQuality> status;
+   setup.get<HcalChannelQualityRcd>().get("withTopo", status);
+   status_ = status.product();
+   edm::ESHandle<HcalSeverityLevelComputer> comp;
+   setup.get<HcalSeverityLevelComputerRcd>().get(comp);
+   comp_ = comp.product();
 }
 
 void
@@ -275,9 +298,18 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    setup.get<CaloGeometryRecord>().get(gen_geo_);
 
+   auto isValid = [&](const auto& hit) {
+      HcalDetId id(hit.id());
+      auto s = status_->getValues(id);
+      int level = comp_->getSeverityLevel(id, 0, s->getValue());
+      return level <= max_severity_;
+   };
+
    if (hits.isValid()) {
       for (auto& hit: *(hits.product())) {
          HcalDetId id(hit.id());
+         if (not isValid(hit))
+            continue;
          ev_rh_energy0_ += hit.eraw() / get_cosh(id);
          ev_rh_energy2_ += hit.energy() / get_cosh(id);
          ev_rh_energy3_ += hit.eaux() / get_cosh(id);
@@ -293,6 +325,8 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    if (hfhits.isValid()) {
       for (auto& hit: *(hfhits.product())) {
          HcalDetId id(hit.id());
+         if (not isValid(hit))
+            continue;
          ev_rh_energy0_ += hit.energy() / get_cosh(id);
          ev_rh_energy2_ += hit.energy() / get_cosh(id);
          ev_rh_energy3_ += hit.energy() / get_cosh(id);

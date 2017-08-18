@@ -76,6 +76,29 @@ def compare_l1t_reemul_tp(process):
     return compare_tp(process, 'compareL1T', 'l1tCaloLayer1Digis', 'simHcalTriggerPrimitiveDigis')
 
 
+def compare_tp_reco(process, name, tag_tp, tag_df, sev):
+    process.load("RecoLocalCalo.HcalRecAlgos.hcalRecAlgoESProd_cfi")
+    add_fileservice(process)
+    add_path(process)
+    setattr(process, name, cms.EDAnalyzer("HcalCompareLegacyChains",
+                                          triggerPrimitives=cms.InputTag(tag_tp),
+                                          recHits=cms.VInputTag('hbheprereco', 'hfreco'),
+                                          dataFrames=cms.VInputTag(cms.InputTag(tag_df), cms.InputTag(tag_df)),
+                                          swapIphi=cms.bool(False),
+                                          maxSeverity=cms.int32(sev)
+                                          ))
+    process.tpCheck *= getattr(process, name)
+    return process
+
+
+def compare_raw_reco_sev9(process):
+    return compare_tp_reco(process, 'compareRawRecoSeverity9', 'hcalDigis', 'hcalDigis', 9)
+
+
+def compare_raw_reco_sev9999(process):
+    return compare_tp_reco(process, 'compareRawRecoSeverity9999', 'hcalDigis', 'hcalDigis', 9999)
+
+
 def use_data_reemul_tp(process):
     add_reemul(process)
     process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag('hcalDigis', 'hcalDigis')

@@ -51,3 +51,23 @@ not include FG bits) and re-emulation:
       --customise Debug/HcalDebug/customize.use_data_reemul_tp \
       --filein /store/data/Run2017C/HcalNZS/RAW/v1/000/299/844/00000/AE36B18A-5271-E711-A223-02163E013895.root,/store/data/Run2017C/HcalNZS/RAW/v1/000/299/844/00000/46B78BA1-5271-E711-8820-02163E01A60E.root \
       -n -1
+
+## From Data, Using L1T Digis and comparing with RecHits
+
+As before, but using files to contain primary and secondary inputs, and
+adding TriggerPrimitive to RecHit comparisons:
+
+    cmsDriver.py analyze \
+      --data --conditions 92X_dataRun2_Prompt_v8 \
+      -s RAW2DIGI --geometry DB:Extended --era Run2_2017 \
+      --no_output \
+      --customise Debug/HcalDebug/customize.analyze_l1t_tp \
+      --customise Debug/HcalDebug/customize.analyze_raw_tp \
+      --customise Debug/HcalDebug/customize.analyze_reemul_tp \
+      --customise Debug/HcalDebug/customize.compare_l1t_reemul_tp \
+      --customise Debug/HcalDebug/customize.compare_raw_reco_sev9 \
+      --customise Debug/HcalDebug/customize.compare_raw_reco_sev9999 \
+      --customise Debug/HcalDebug/customize.use_data_reemul_tp \
+      --filein=$(<~/JetHTRECO.txt) \
+      --secondfilein=$(<~/JetHT.txt) \
+      -n 50000
