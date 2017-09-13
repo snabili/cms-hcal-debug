@@ -86,6 +86,8 @@ class AnalyzeTP : public edm::EDAnalyzer {
 
       int event_;
 
+      TH1D *saturation_;
+
       TTree *match_;
       int m_ieta_;
       int m_iphi_;
@@ -124,6 +126,8 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    edm::Service<TFileService> fs;
 
    consumes<HcalTrigPrimDigiCollection>(digis_);
+
+   saturation_ = fs->make<TH1D>("saturation", "", 42, 0.5, 42.5);
 
    tps_ = fs->make<TTree>("tps", "Trigger primitives");
    tps_->Branch("event", &event_);
@@ -190,6 +194,13 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
    ESHandle<HcalTrigTowerGeometry> tpd_geo;
    setup.get<CaloGeometryRecord>().get(tpd_geo);
+
+   if (saturation_->Integral() == 0) {
+      for (int i = 1; i <= 42; ++i) {
+         HcalTrigTowerDetId id(i, 3, 1, i > 29 ? 1 : 0);
+         saturation_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(255, 0)));
+      }
+   }
 
    std::map<HcalTrigTowerDetId, HcalTriggerPrimitiveDigi> ttids;
    for (const auto& digi: *digis) {
