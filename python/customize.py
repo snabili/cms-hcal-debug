@@ -104,3 +104,11 @@ def use_data_reemul_tp(process):
     process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag('hcalDigis', 'hcalDigis')
     process.simHcalTriggerPrimitiveDigis.inputUpgradeLabel = cms.VInputTag('hcalDigis', 'hcalDigis')
     return process
+
+
+def use_linear_luts(process):
+    process.load('CalibCalorimetry.CaloTPG.CaloTPGTranscoder_cfi')
+    process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
+    process.CaloTPGTranscoder.linearLUTs = cms.bool(True)
+    process.HcalTPGCoderULUT.linearLUTs = cms.bool(True)
+    return process
