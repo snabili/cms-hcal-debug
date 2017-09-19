@@ -87,6 +87,7 @@ class AnalyzeTP : public edm::EDAnalyzer {
       int event_;
 
       TH1D *saturation_;
+      TH1D *delta_;
 
       TTree *match_;
       int m_ieta_;
@@ -128,6 +129,7 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    consumes<HcalTrigPrimDigiCollection>(digis_);
 
    saturation_ = fs->make<TH1D>("saturation", "", 42, 0.5, 42.5);
+   delta_ = fs->make<TH1D>("delta", "", 42, 0.5, 42.5);
 
    tps_ = fs->make<TTree>("tps", "Trigger primitives");
    tps_->Branch("event", &event_);
@@ -199,6 +201,7 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       for (int i = 1; i <= 42; ++i) {
          HcalTrigTowerDetId id(i, 3, 1, i > 29 ? 1 : 0);
          saturation_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(255, 0)));
+         delta_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(255, 0)) - decoder->hcaletValue(id, HcalTriggerPrimitiveSample(254, 0)));
       }
    }
 
