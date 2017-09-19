@@ -84,6 +84,8 @@ class AnalyzeTP : public edm::EDAnalyzer {
       edm::InputTag digis_;
       double threshold_;
 
+      int run_;
+      int lumi_;
       int event_;
 
       TH1D *saturation_;
@@ -132,6 +134,8 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    delta_ = fs->make<TH1D>("delta", "", 42, 0.5, 42.5);
 
    tps_ = fs->make<TTree>("tps", "Trigger primitives");
+   tps_->Branch("run", &run_);
+   tps_->Branch("lumi", &lumi_);
    tps_->Branch("event", &event_);
    tps_->Branch("ieta", &tp_ieta_);
    tps_->Branch("iphi", &tp_iphi_);
@@ -143,6 +147,8 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    tps_->Branch("fg1", &tp_fg1_);
 
    ev_ = fs->make<TTree>("evs", "Event quantities");
+   ev_->Branch("run", &run_);
+   ev_->Branch("lumi", &lumi_);
    ev_->Branch("event", &event_);
    ev_->Branch("tp_v0_et", &ev_tp_v0_et_);
    ev_->Branch("tp_v1_et", &ev_tp_v1_et_);
@@ -151,6 +157,8 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    ev_->Branch("ntp_hf", &ev_ntp_hf_);
 
    match_ = fs->make<TTree>("ms", "TP matches");
+   match_->Branch("run", &run_);
+   match_->Branch("lumi", &lumi_);
    match_->Branch("event", &event_);
    match_->Branch("ieta", &m_ieta_);
    match_->Branch("iphi", &m_iphi_);
@@ -170,6 +178,8 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
    using namespace edm;
 
+   run_ = event.id().run();
+   lumi_ = event.id().luminosityBlock();
    event_ = event.id().event();
 
    Handle<HcalTrigPrimDigiCollection> digis;
