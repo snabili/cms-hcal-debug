@@ -32,6 +32,7 @@ def add_l1t(process):
 
 
 def analyze_tp(process, name, tag):
+    process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
     add_fileservice(process)
     add_path(process)
     setattr(process, name, cms.EDAnalyzer("AnalyzeTP",
