@@ -50,6 +50,10 @@ def analyze_raw_tp(process):
     return analyze_tp(process, 'analyzeRaw', 'hcalDigis')
 
 
+def analyze_emul_tp(process):
+    return analyze_tp(process, 'analyzeEmul', 'simHcalTriggerPrimitiveDigis')
+
+
 def analyze_reemul_tp(process):
     add_reemul(process)
     return analyze_tp(process, 'analyzeReemul', 'simHcalTriggerPrimitiveDigis')
