@@ -100,6 +100,10 @@ def compare_raw_reco_sev9(process):
     return compare_tp_reco(process, 'compareRawRecoSeverity9', 'hcalDigis', 'hcalDigis', 9)
 
 
+def compare_reemul_reco_sev9(process):
+    return compare_tp_reco(process, 'compareRawRecoSeverity9', 'simHcalTriggerPrimitiveDigis', 'hcalDigis', 9)
+
+
 def compare_raw_reco_sev9999(process):
     return compare_tp_reco(process, 'compareRawRecoSeverity9999', 'hcalDigis', 'hcalDigis', 9999)
 
