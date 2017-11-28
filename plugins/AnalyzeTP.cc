@@ -90,6 +90,11 @@ class AnalyzeTP : public edm::EDAnalyzer {
 
       TH1D *saturation_;
       TH1D *delta_;
+      TH1D *lsb_;
+      TH1D *nlsb_;
+      TH1D *nnlsb_;
+      TH1D *nnnlsb_;
+      TH1D *nnnnlsb_;
 
       TTree *match_;
       int m_ieta_;
@@ -132,6 +137,11 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
 
    saturation_ = fs->make<TH1D>("saturation", "", 42, 0.5, 42.5);
    delta_ = fs->make<TH1D>("delta", "", 42, 0.5, 42.5);
+   lsb_ = fs->make<TH1D>("lsb", "", 42, 0.5, 42.5);
+   nlsb_ = fs->make<TH1D>("nlsb", "", 42, 0.5, 42.5);
+   nnlsb_ = fs->make<TH1D>("nnlsb", "", 42, 0.5, 42.5);
+   nnnlsb_ = fs->make<TH1D>("nnnlsb", "", 42, 0.5, 42.5);
+   nnnnlsb_ = fs->make<TH1D>("nnnnlsb", "", 42, 0.5, 42.5);
 
    tps_ = fs->make<TTree>("tps", "Trigger primitives");
    tps_->Branch("run", &run_);
@@ -212,6 +222,11 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          HcalTrigTowerDetId id(i, 3, 1, i > 29 ? 1 : 0);
          saturation_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(255, 0)));
          delta_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(255, 0)) - decoder->hcaletValue(id, HcalTriggerPrimitiveSample(254, 0)));
+         lsb_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(1, 0)));
+         nlsb_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(2, 0)));
+         nnlsb_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(3, 0)));
+         nnnlsb_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(4, 0)));
+         nnnnlsb_->SetBinContent(i, decoder->hcaletValue(id, HcalTriggerPrimitiveSample(5, 0)));
       }
    }
 
