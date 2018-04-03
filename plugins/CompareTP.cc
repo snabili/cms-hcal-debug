@@ -90,6 +90,8 @@ class CompareTP : public edm::EDAnalyzer {
 
       bool swap_iphi_;
 
+      int run_;
+      int lumi_;
       int event_;
 
       TTree *tps_;
@@ -122,6 +124,8 @@ CompareTP::CompareTP(const edm::ParameterSet& config) :
    consumes<HcalTrigPrimDigiCollection>(edigis_);
 
    tps_ = fs->make<TTree>("tps", "Trigger primitives");
+   tps_->Branch("run", &run_);
+   tps_->Branch("lumi", &lumi_);
    tps_->Branch("event", &event_);
    tps_->Branch("ieta", &tp_ieta_);
    tps_->Branch("iphi", &tp_iphi_);
@@ -159,6 +163,8 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
    using namespace edm;
 
+   run_ = event.id().run();
+   lumi_ = event.id().luminosityBlock();
    event_ = event.id().event();
 
    Handle<HcalTrigPrimDigiCollection> digis;

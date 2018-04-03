@@ -8,7 +8,7 @@ def main():
     """Generate configuration file given primary dataset,
     conditions, run period, and era."""
     primary_dataset = 'HcalNZS'
-    conditions = '100X_dataRun2_HLT_v1'
+    conditions = '100X_dataRun2_HLT_v3'
     period = 'Commissioning2018'
     era = 'Run2_2018'
 
