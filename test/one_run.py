@@ -4,6 +4,16 @@ Create configuration file to make data/emulation comparisons for one run.
 """
 import os, argparse, shutil
 
+def check_setup():
+    """Check that valid proxy is available; needed to
+    access DAS."""
+    exit_code = os.system('voms-proxy-info -exists')
+    if(exit_code != 0):
+        print "Obtain valid proxy with 'voms-proxy-init -voms cms -rfc'"
+        return False
+    else:
+        return True
+
 def main():
     """Generate configuration file given primary dataset,
     conditions, run period, and era."""
@@ -27,7 +37,7 @@ def main():
     if(args.type):
         primary_dataset = args.type
         
-    if(primary_dataset != "local"):
+    if(primary_dataset != "local" and check_setup()):
         filename = 'filelist_' + runnumber + '_' + primary_dataset + '.txt'
         output_filename = "\\\'analyze_" + runnumber + ".root\\\'"
 
