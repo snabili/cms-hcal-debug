@@ -29,17 +29,16 @@ Change to the output directory and then analyze the second step:
 Use as input to the `cmsDriver.py` command:
 
     cmsDriver.py analyze \
-      --conditions auto:phase1_2017_realistic \
-      -s RAW2DIGI,DIGI --geometry DB:Extended --era Run2_2017 \
+      --conditions auto:phase1_2018_realistic \
+      -s RAW2DIGI,DIGI --geometry DB:Extended --era Run2_2018 \
       --customise Debug/HcalDebug/customize.analyze_raw_tp \
       --customise Debug/HcalDebug/customize.analyze_reemul_tp \
-      --filein das:/RelValTTbarLepton_13/CMSSW_9_0_0_pre6-90X_upgrade2017_realistic_v15-v1/GEN-SIM-DIGI-RAW \
+      --filein das:/RelValQCD_FlatPt_15_3000HS_13/CMSSW_10_1_0_pre3-101X_upgrade2018_realistic_v3-v1/GEN-SIM-DIGI-RAW \
       -n 1000
 
 ## From Data, Using L1T Digis
 
-Using a run with HF FG bit mis-matches between L1T inputs (HCAL RAW does
-not include FG bits) and re-emulation:
+Using a run with HF FG bit mis-matches between L1T inputs and re-emulation:
 
     cmsDriver.py analyze \
       --data --conditions auto:run2_data \
@@ -54,12 +53,12 @@ not include FG bits) and re-emulation:
 
 ## From Data, Using L1T Digis and comparing with RecHits
 
-As before, but using files to contain primary and secondary inputs, and
+As before, but using files that contain primary and secondary input file lists, and
 adding TriggerPrimitive to RecHit comparisons:
 
     cmsDriver.py analyze \
-      --data --conditions 92X_dataRun2_Prompt_v8 \
-      -s RAW2DIGI --geometry DB:Extended --era Run2_2017 \
+      --data --conditions 100X_dataRun2_HLT_v3 \
+      -s RAW2DIGI --geometry DB:Extended --era Run2_2018 \
       --no_output \
       --customise Debug/HcalDebug/customize.analyze_l1t_tp \
       --customise Debug/HcalDebug/customize.analyze_raw_tp \
@@ -68,6 +67,20 @@ adding TriggerPrimitive to RecHit comparisons:
       --customise Debug/HcalDebug/customize.compare_raw_reco_sev9 \
       --customise Debug/HcalDebug/customize.compare_raw_reco_sev9999 \
       --customise Debug/HcalDebug/customize.use_data_reemul_tp \
-      --filein=$(<~/JetHTRECO.txt) \
-      --secondfilein=$(<~/JetHT.txt) \
+      --filein=filelist:JetHTRECO.txt \
+      --secondfilein=filelist:JetHT.txt \
       -n 50000
+
+## Analyzing one run (global)
+
+The script `one_run.py` provides a quick way to generate a configuration for the analysis of a single run. To analyze run 312712 of the `HcalNZS` dataset in the `Commissioning2018` run period:
+
+    ./one_run.py -r 312712 -t HcalNZS -p Commissioning2018
+
+This will run a DAS command to find the appropriate files before generating the analysis configuration.
+
+## Analyzing one run (local)
+
+Local runs are based on `HcalTBSource` rather than `PoolSource` input and so cannot currently be analyzed with `cmsDriver.py` commands, but the `one_run.py` script can be used with the `-t local` option provides an alternative:
+
+    ./one_run.py -r 312717 -t local
