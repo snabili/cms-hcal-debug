@@ -108,6 +108,8 @@ class CompareTP : public edm::EDAnalyzer {
       std::array<int, 10> tp_adc_emul_;
       double tp_et_;
       double tp_et_emul_;
+      bool tp_zsMarkAndPass_;
+      bool tp_zsMarkAndPass_emul_;
       std::array<int, FGCOUNT> tp_fg_;
       std::array<int, FGCOUNT> tp_fg_emul_;
 };
@@ -137,6 +139,9 @@ CompareTP::CompareTP(const edm::ParameterSet& config) :
    tps_->Branch("npresamples_emul", &tp_npresamples_emul_);
    tps_->Branch("et", &tp_et_);
    tps_->Branch("et_emul", &tp_et_emul_);
+   tps_->Branch("zsMarkAndPass", &tp_zsMarkAndPass_);
+   tps_->Branch("zsMarkAndPass_emul", &tp_zsMarkAndPass_emul_);
+
    for (unsigned int i = 0; i < tp_fg_.size(); ++i)
       tps_->Branch(("fg" + std::to_string(i)).c_str(), &tp_fg_[i]);
    for (unsigned int i = 0; i < tp_fg_emul_.size(); ++i)
@@ -212,6 +217,7 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       if ((digi = ds.find(id)) != ds.end()) {
          tp_soi_ = digi->second.SOI_compressedEt();
          tp_npresamples_ = digi->second.presamples();
+         tp_zsMarkAndPass_ = digi->second.zsMarkAndPass();
          tp_et_ = decoder->hcaletValue(id, digi->second.t0());
          for (unsigned int i = 0; i < tp_fg_.size(); ++i)
             tp_fg_[i] = digi->second.t0().fineGrain(i);
@@ -221,6 +227,7 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          tp_soi_ = 0;
          tp_npresamples_ = 0;
          tp_et_ = 0;
+         tp_zsMarkAndPass_ = 0;
          for (unsigned int i = 0; i < tp_fg_.size(); ++i)
             tp_fg_[i] = 0;
          for (unsigned int i = 0; i < tp_adc_.size(); ++i)
@@ -236,6 +243,7 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       if ((digi = eds.find(new_id)) != eds.end()) {
          tp_soi_emul_ = digi->second.SOI_compressedEt();
          tp_npresamples_emul_ = digi->second.presamples();
+         tp_zsMarkAndPass_emul_ = digi->second.zsMarkAndPass();
          tp_et_emul_ = decoder->hcaletValue(id, digi->second.t0());
          for (unsigned int i = 0; i < tp_fg_emul_.size(); ++i)
             tp_fg_emul_[i] = digi->second.t0().fineGrain(i);
@@ -245,6 +253,7 @@ CompareTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          tp_soi_emul_ = 0;
          tp_npresamples_emul_ = 0;
          tp_et_emul_ = 0;
+         tp_zsMarkAndPass_emul_ = 0;
          for (unsigned int i = 0; i < tp_fg_emul_.size(); ++i)
             tp_fg_emul_[i] = 0;
          for (unsigned int i = 0; i < tp_adc_emul_.size(); ++i)
