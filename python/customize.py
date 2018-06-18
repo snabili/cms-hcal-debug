@@ -1,5 +1,12 @@
 import FWCore.ParameterSet.Config as cms
-
+#import FWCore.ParameterSet.VarParsing as VarParsing
+#options = VarParsing.VarParsing ('standard')
+#options.register('hltName', 
+#                 'HLT', 
+#                 VarParsing.VarParsing.multiplicity.singleton, 
+#                 VarParsing.VarParsing.varType.string, 
+#                 "HLT menu to use for trigger matching"
+#)
 
 def add_fileservice(process):
     process.TFileService = cms.Service("TFileService",
@@ -30,13 +37,25 @@ def add_l1t(process):
     except ValueError:
         process.tpCheck *= process.l1tCaloLayer1Digis
 
-
-def analyze_tp(process, name, tag):
+#def analyze_tp(process, name, tag1):
+def analyze_tp(process, options, name, tag1):
     process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
     add_fileservice(process)
     add_path(process)
+
     setattr(process, name, cms.EDAnalyzer("AnalyzeTP",
-                                          triggerPrimitives=cms.InputTag(tag, "", "")))
+                                          triggerPrimitives=cms.InputTag(tag1, "", ""),
+                                          # vertices
+                                          vtxToken=cms.untracked.VInputTag("offlinePrimaryVertices","","RECO"),
+                                          doReco = cms.bool(True),
+                                          maxVtx = cms.uint32(100),
+                                          threshold = cms.untracked.double(0.5),
+                                          # apply trigger
+                                          bits = cms.InputTag("TriggerResults","",options.hltName))
+
+)
+         
+
     process.tpCheck *= getattr(process, name)
     return process
 
@@ -46,8 +65,11 @@ def analyze_l1t_tp(process):
     return analyze_tp(process, 'analyzeL1T', 'l1tCaloLayer1Digis')
 
 
-def analyze_raw_tp(process):
-    return analyze_tp(process, 'analyzeRaw', 'hcalDigis')
+def analyze_raw_tp(process, options):
+    return analyze_tp(process, options, 'analyzeRaw', 'hcalDigis')
+
+#def analyze_raw_tp(process):
+#    return analyze_tp(process, 'analyzeRaw', 'hcalDigis')
 
 
 def analyze_emul_tp(process):
@@ -65,7 +87,8 @@ def compare_tp(process, name, tag1, tag2):
     setattr(process, name, cms.EDAnalyzer("CompareTP",
                                           swapIphi=cms.bool(False),
                                           triggerPrimitives=cms.InputTag(tag1, "", process.name_()),
-                                          emulTriggerPrimitives=cms.InputTag(tag2, "", process.name_())))
+                                          emulTriggerPrimitives=cms.InputTag(tag2, "", process.name_())),
+)
     process.tpCheck *= getattr(process, name)
     return process
 
