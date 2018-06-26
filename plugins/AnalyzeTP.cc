@@ -21,6 +21,8 @@
 // system include files
 #include <memory>
 #include <unordered_map>
+#include <string>
+#include <unordered_set>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -62,6 +64,15 @@
 #include "Geometry/HcalTowerAlgo/interface/HcalTrigTowerGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+
+
+#include "TSystem.h"
+#include "TROOT.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TString.h"
@@ -69,6 +80,8 @@
 //
 // class declaration
 //
+
+
 
 class AnalyzeTP : public edm::EDAnalyzer {
    public:
@@ -82,7 +95,18 @@ class AnalyzeTP : public edm::EDAnalyzer {
 
       // ----------member data ---------------------------
       edm::InputTag digis_;
+      //double threshold_;
+
+      //
+      bool doReco_;
+      unsigned int maxVtx_;      
+      std::vector<edm::InputTag> vtxToken_;
+      
       double threshold_;
+      
+      //
+      edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+      bool zerobiasTrigger_;     
 
       int run_;
       int lumi_;
@@ -118,22 +142,40 @@ class AnalyzeTP : public edm::EDAnalyzer {
       int tp_fg1_;
       double tp_et_;
 
+  //int ev_nvtx_;
+  
       TTree *ev_;
       double ev_tp_v0_et_;
       double ev_tp_v1_et_;
       int ev_ntp_hb_;
       int ev_ntp_he_;
       int ev_ntp_hf_;
+      int ev_ntp_hb_thr1_;
+      int ev_ntp_he_thr1_;
+      int ev_ntp_hf_thr1_;
+      int ev_ntp_hb_thr5_;
+      int ev_ntp_he_thr5_;
+      int ev_ntp_hf_thr5_;
+
+      int ev_nvtx_;
+
 };
 
-AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
-   edm::EDAnalyzer(),
-   digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
-   threshold_(config.getUntrackedParameter<double>("threshold", 0.))
+AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config):
+  edm::EDAnalyzer(),
+  digis_(config.getParameter<edm::InputTag>("triggerPrimitives")),
+  doReco_(config.getParameter<bool>("doReco")),
+  maxVtx_(config.getParameter<unsigned int>("maxVtx")),
+  vtxToken_(config.getUntrackedParameter<std::vector<edm::InputTag>>("vtxToken")),
+  threshold_(config.getUntrackedParameter<double>("threshold", 0.0)), 
+  triggerBits_( consumes<edm::TriggerResults>(config.getParameter<edm::InputTag>("bits")) )
 {
    edm::Service<TFileService> fs;
 
    consumes<HcalTrigPrimDigiCollection>(digis_);
+   
+   //
+   if (doReco_) consumes<reco::VertexCollection>(vtxToken_[0]);
 
    saturation_ = fs->make<TH1D>("saturation", "", 42, 0.5, 42.5);
    delta_ = fs->make<TH1D>("delta", "", 42, 0.5, 42.5);
@@ -155,6 +197,11 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    tps_->Branch("et", &tp_et_);
    tps_->Branch("fg0", &tp_fg0_);
    tps_->Branch("fg1", &tp_fg1_);
+ 
+   tps_->Branch("zerobiasTrigger", &zerobiasTrigger_);  
+   // get vertices
+   tps_->Branch("nvtx", &ev_nvtx_);
+
 
    ev_ = fs->make<TTree>("evs", "Event quantities");
    ev_->Branch("run", &run_);
@@ -165,6 +212,16 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config) :
    ev_->Branch("ntp_hb", &ev_ntp_hb_);
    ev_->Branch("ntp_he", &ev_ntp_he_);
    ev_->Branch("ntp_hf", &ev_ntp_hf_);
+   ev_->Branch("ntp_hb_thr1", &ev_ntp_hb_thr1_);
+   ev_->Branch("ntp_he_thr1", &ev_ntp_he_thr1_);
+   ev_->Branch("ntp_hf_thr1", &ev_ntp_hf_thr1_);
+   ev_->Branch("ntp_hb_thr5", &ev_ntp_hb_thr5_);
+   ev_->Branch("ntp_he_thr5", &ev_ntp_he_thr5_);
+   ev_->Branch("ntp_hf_thr5", &ev_ntp_hf_thr5_);
+
+
+   ev_->Branch("zerobiasTrigger", &zerobiasTrigger_);
+   ev_->Branch("nvtx", &ev_nvtx_);   
 
    match_ = fs->make<TTree>("ms", "TP matches");
    match_->Branch("run", &run_);
@@ -191,7 +248,6 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    run_ = event.id().run();
    lumi_ = event.id().luminosityBlock();
    event_ = event.id().event();
-
    Handle<HcalTrigPrimDigiCollection> digis;
    if (!event.getByLabel(digis_, digis)) {
       LogError("AnalyzeTP") <<
@@ -214,6 +270,15 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    ev_ntp_he_ = 0;
    ev_ntp_hf_ = 0;
 
+   ev_ntp_hb_thr1_ = 0;
+   ev_ntp_he_thr1_ = 0;
+   ev_ntp_hf_thr1_ = 0;
+   
+   ev_ntp_hb_thr5_ = 0;
+   ev_ntp_he_thr5_ = 0;
+   ev_ntp_hf_thr5_ = 0;
+
+   
    ESHandle<HcalTrigTowerGeometry> tpd_geo;
    setup.get<CaloGeometryRecord>().get(tpd_geo);
 
@@ -235,6 +300,38 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
       if (digi.id().version() == 1)
          ttids[digi.id()] = digi;
    }
+   
+
+   // apply trigger
+   
+   edm::Handle<edm::TriggerResults> triggerBits;
+   event.getByToken(triggerBits_,triggerBits);
+
+   const edm::TriggerNames& trigNames = event.triggerNames(*triggerBits);
+
+   size_t pathIndex = trigNames.triggerIndex("HLT_ZeroBias_v6");
+   bool zerobiasTrigger = false;
+   if ( pathIndex < triggerBits->size() && triggerBits->accept(pathIndex))
+      zerobiasTrigger = true;
+   zerobiasTrigger_ = zerobiasTrigger;
+   
+
+   // get vertices
+   if (doReco_) {
+     ev_nvtx_ = 0;
+     edm::Handle<reco::VertexCollection> vertices; 
+     event.getByLabel(vtxToken_[0], vertices); 
+     if (vertices.isValid()) {
+
+       unsigned int nVtx_ = 0;
+       for(reco::VertexCollection::const_iterator it=vertices->begin();
+           it!=vertices->end() && nVtx_ < maxVtx_; 
+           ++it) {
+         if (!it->isFake()) { nVtx_++; }
+       }
+       ev_nvtx_ = (int)nVtx_;   
+     }
+   }
 
    for (const auto& digi: *digis) {
       HcalTrigTowerDetId id = digi.id();
@@ -255,28 +352,43 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
          continue;
 
       tps_->Fill();
-
-      if (abs(tp_ieta_) <= 16)
+      if (abs(tp_ieta_) <= 16) {
          ++ev_ntp_hb_;
-      else if (abs(tp_ieta_) <= 29)
+         if (tp_et_ > 1.) 
+            ++ev_ntp_hb_thr1_;
+         if (tp_et_ > 5.) 
+            ++ev_ntp_hb_thr5_;
+      }
+      else if (abs(tp_ieta_) <= 29) {
          ++ev_ntp_he_;
-      else
+         if (tp_et_ > 1.) 
+            ++ev_ntp_he_thr1_;
+         if (tp_et_ > 5.) 
+            ++ev_ntp_he_thr5_;
+      }
+      else {
          ++ev_ntp_hf_;
-
-      if (tp_version_ == 0 and abs(tp_ieta_) >= 29) {
-         ev_tp_v0_et_ += tp_et_;
-      } else if (tp_version_ == 1) {
-         ev_tp_v1_et_ += tp_et_;
+         if (tp_et_ > 1.)
+            ++ev_ntp_hf_thr1_;
+         if (tp_et_ > 5.)
+            ++ev_ntp_hf_thr5_;
       }
 
-      if (abs(tp_ieta_) >= 29 and tp_version_ == 0) {
-         std::set<HcalTrigTowerDetId> matches;
-         for (const auto& detid: tpd_geo->detIds(id)) {
-            for (const auto& ttid: tpd_geo->towerIds(detid)) {
-               if (ttid.version() == 1)
-                  matches.insert(ttid);
-            }
-         }
+	if (tp_version_ == 0 and abs(tp_ieta_) >= 29) {
+	  ev_tp_v0_et_ += tp_et_;
+	} else if (tp_version_ == 1) {
+	  ev_tp_v1_et_ += tp_et_;
+	}
+
+	if (abs(tp_ieta_) >= 29 and tp_version_ == 0) {
+	   std::set<HcalTrigTowerDetId> matches;
+	   for (const auto& detid: tpd_geo->detIds(id)) {
+               for (const auto& ttid: tpd_geo->towerIds(detid)) {
+	       if (ttid.version() == 1)
+		  matches.insert(ttid);
+               }
+	   }         
+	
 
          m_ieta_ = tp_ieta_;
          m_iphi_ = tp_iphi_;
