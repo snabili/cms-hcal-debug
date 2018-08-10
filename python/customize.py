@@ -22,6 +22,8 @@ def add_path(process):
 
 def add_reemul(process):
     process.load('SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff')
+    process.simHcalTriggerPrimitiveDigis.RunZS = cms.bool(True)
+    process.simHcalTriggerPrimitiveDigis.ZS_threshold = cms.uint32(0)
     add_path(process)
     try:
         process.tpCheck.index(process.simHcalTriggerPrimitiveDigis)
