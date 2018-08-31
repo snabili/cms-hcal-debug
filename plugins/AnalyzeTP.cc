@@ -105,8 +105,8 @@ class AnalyzeTP : public edm::EDAnalyzer {
       double threshold_;
       
       //
-      edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
-      bool zerobiasTrigger_;     
+  //      edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+  //      bool zerobiasTrigger_;     
 
       int run_;
       int lumi_;
@@ -167,8 +167,8 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config):
   doReco_(config.getParameter<bool>("doReco")),
   maxVtx_(config.getParameter<unsigned int>("maxVtx")),
   vtxToken_(config.getUntrackedParameter<std::vector<edm::InputTag>>("vtxToken")),
-  threshold_(config.getUntrackedParameter<double>("threshold", 0.0)), 
-  triggerBits_( consumes<edm::TriggerResults>(config.getParameter<edm::InputTag>("bits")) )
+  threshold_(config.getUntrackedParameter<double>("threshold", 0.0)) 
+  //  triggerBits_( consumes<edm::TriggerResults>(config.getParameter<edm::InputTag>("bits")) )
 {
    edm::Service<TFileService> fs;
 
@@ -198,7 +198,7 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config):
    tps_->Branch("fg0", &tp_fg0_);
    tps_->Branch("fg1", &tp_fg1_);
  
-   tps_->Branch("zerobiasTrigger", &zerobiasTrigger_);  
+   //   tps_->Branch("zerobiasTrigger", &zerobiasTrigger_);  
    // get vertices
    tps_->Branch("nvtx", &ev_nvtx_);
 
@@ -220,7 +220,7 @@ AnalyzeTP::AnalyzeTP(const edm::ParameterSet& config):
    ev_->Branch("ntp_hf_thr5", &ev_ntp_hf_thr5_);
 
 
-   ev_->Branch("zerobiasTrigger", &zerobiasTrigger_);
+   //   ev_->Branch("zerobiasTrigger", &zerobiasTrigger_);
    ev_->Branch("nvtx", &ev_nvtx_);   
 
    match_ = fs->make<TTree>("ms", "TP matches");
@@ -302,8 +302,8 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    }
    
 
-   // apply trigger
-   
+   // apply trigger -> Uncomment to apply
+   /*
    edm::Handle<edm::TriggerResults> triggerBits;
    event.getByToken(triggerBits_,triggerBits);
 
@@ -314,7 +314,7 @@ AnalyzeTP::analyze(const edm::Event& event, const edm::EventSetup& setup)
    if ( pathIndex < triggerBits->size() && triggerBits->accept(pathIndex))
       zerobiasTrigger = true;
    zerobiasTrigger_ = zerobiasTrigger;
-   
+   */
 
    // get vertices
    if (doReco_) {
