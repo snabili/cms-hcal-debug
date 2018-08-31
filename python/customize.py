@@ -51,9 +51,9 @@ def analyze_tp(process, options, name, tag1):
                                           vtxToken=cms.untracked.VInputTag("offlinePrimaryVertices","","RECO"),
                                           doReco = cms.bool(True),
                                           maxVtx = cms.uint32(100),
-                                          threshold = cms.untracked.double(0.5),
+                                          threshold = cms.untracked.double(0.5)
                                           # apply trigger
-                                          bits = cms.InputTag("TriggerResults","",options.hltName))
+#                                          bits = cms.InputTag("TriggerResults","",options.hltName))
 
 )
          

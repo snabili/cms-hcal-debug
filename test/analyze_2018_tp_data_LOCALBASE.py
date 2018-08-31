@@ -54,9 +54,23 @@ process.hcalDigis.InputLabel = cms.InputTag("source")
 
 
 process.analyzeRAW = cms.EDAnalyzer("AnalyzeTP",
-                                    triggerPrimitives=cms.InputTag("hcalDigis", "", ""))
+                                    triggerPrimitives=cms.InputTag("hcalDigis", "", ""),
+                                     # vertices
+                                    vtxToken=cms.untracked.VInputTag("offlinePrimaryVertices","","RECO"),
+                                    doReco = cms.bool(False),
+                                    maxVtx = cms.uint32(100),
+                                    threshold = cms.untracked.double(0.5)
+
+)
 process.analyzeSIM = cms.EDAnalyzer("AnalyzeTP",
-                                    triggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", ""))
+                                    triggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis", "", ""),
+                                     # vertices
+                                    vtxToken=cms.untracked.VInputTag("offlinePrimaryVertices","","RECO"),
+                                    doReco = cms.bool(False),
+                                    maxVtx = cms.uint32(100),
+                                    threshold = cms.untracked.double(0.5)
+)
+
 process.compare = cms.EDAnalyzer("CompareTP",
                                  triggerPrimitives=cms.InputTag("hcalDigis"),
                                  emulTriggerPrimitives=cms.InputTag("simHcalTriggerPrimitiveDigis"),
