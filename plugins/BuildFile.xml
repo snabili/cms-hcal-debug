@@ -12,6 +12,8 @@
 <use name="DataFormats/HcalDigi"/>
 <use name="DataFormats/HcalRecHit"/>
 <use name="DataFormats/L1TCalorimeter"/>
+<use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/METReco"/>
 <use name="Geometry/CaloGeometry"/>
 <use name="Geometry/HcalTowerAlgo"/>
 <use name="Geometry/Records"/>

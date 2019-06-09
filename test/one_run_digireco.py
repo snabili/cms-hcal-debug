@@ -51,13 +51,13 @@ def main():
         # generate cmsDriver.py command
         cmsdriver_command = "cmsDriver.py" \
             + " analyze --data --conditions " + conditions \
-            + " -s RAW2DIGI --geometry DB:Extended --era " + era \
+            + " -s RAW2DIGI,L1Reco,RECO --geometry DB:Extended --era " + era \
             + " --customise Debug/HcalDebug/customize.compare_raw_reemul_tp" \
             + " --customise Debug/HcalDebug/customize.use_data_reemul_tp" \
             + " --customise_commands" \
             + " process.TFileService.fileName=cms.string\(" + output_filename + "\)" \
             + " --filein=filelist:" + filename \
-            + " --python_filename=analyze_DIGI" + runnumber + ".py" \
+            + " --python_filename=analyze_" + runnumber + ".py" \
             #+ " --no_exec -n -1 --no_output " 
         print "Using cmsDriver.py command:\n" + cmsdriver_command
         os.system(cmsdriver_command)

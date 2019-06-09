@@ -109,10 +109,18 @@ def compare_tp_reco(process, name, tag_tp, tag_df, sev):
     add_path(process)
     setattr(process, name, cms.EDAnalyzer("HcalCompareLegacyChains",
                                           triggerPrimitives=cms.InputTag(tag_tp),
-                                          recHits=cms.VInputTag('hbheprereco', 'hfreco'),
+                                          recHits=cms.VInputTag('hbheprereco' , 'hfreco'),
                                           dataFrames=cms.VInputTag(cms.InputTag(tag_df), cms.InputTag(tag_df)),
                                           swapIphi=cms.bool(False),
-                                          maxSeverity=cms.int32(sev)
+                                          sumToken =  cms.untracked.InputTag("caloStage2Digis","EtSum"),
+					  metToken =  cms.untracked.InputTag("pfMet"),
+					  caloMetToken =  cms.untracked.InputTag("caloMet"),
+					  caloMetBEToken = cms.untracked.InputTag("caloMetBE"),
+                                          maxSeverity=cms.int32(sev),
+					  hcalToken = cms.InputTag("simHcalTriggerPrimitiveDigis"),
+					  pvToken = cms.InputTag("offlinePrimaryVertices")
+					  #PFRecHitsECAL = cms.InputTag("particleFlowCluster","ECAL")
+                                          #PFHcalClusterLabel = cms.InputTag("particleFlowClusterHCAL"),
                                           ))
     process.tpCheck *= getattr(process, name)
     return process
