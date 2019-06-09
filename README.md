@@ -2,7 +2,7 @@
 
 Install with:
 
-    git clone git@github.com:cms-hcal-trigger/cms-hcal-debug.git Debug/HcalDebug
+    git clone https://github.com/snabili/cms-hcal-debug.git Debug/HcalDebug
     scram b -j 8
 
 # Examples
