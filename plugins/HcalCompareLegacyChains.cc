@@ -148,41 +148,72 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
 
       //====== 1D Histo Declaration =========
       TH1D *h_PFRecHit;
-      TH1D *h_CHPVMPF_noPU;
+      TH1D *h_CHPVMPF_HS;
       TH1D *h_CHPVMPF_PU;
       TH1D *h_CHPVMPF;
-      TH1D *h_RecMET_noPU;
+      TH1D *h_RecMET_HS;
       TH1D *h_RecMET_PU;
       TH1D *h_RecMET;
-      TH1D *h_RecHEdepth1_noPU;
-      TH1D *h_RecHEdepth2_noPU;
-      TH1D *h_RecHEdepth3_noPU;
-      TH1D *h_RecHEdepth4_noPU;
-      TH1D *h_RecHEdepth5_noPU;
-      TH1D *h_RecHEdepth6_noPU;
-      TH1D *h_RecHEdepth7_noPU;
-      TH1D *h_RecHEdepth1_PU;
-      TH1D *h_RecHEdepth2_PU;
-      TH1D *h_RecHEdepth3_PU;
-      TH1D *h_RecHEdepth4_PU;
-      TH1D *h_RecHEdepth5_PU;
-      TH1D *h_RecHEdepth6_PU;
-      TH1D *h_RecHEdepth7_PU;
-      TH1D *h_PFRecHit_Et;
+
+      TH1D *h_PFRecHEdepth1;
+      TH1D *h_PFRecHEdepth2;
+      TH1D *h_PFRecHEdepth3;
+      TH1D *h_PFRecHEdepth4;
+      TH1D *h_PFRecHEdepth5;
+      TH1D *h_PFRecHEdepth6;
+      TH1D *h_PFRecHEdepth7;
+
+      TH1D *h_PFRecHEdepth1_HS;
+      TH1D *h_PFRecHEdepth2_HS;
+      TH1D *h_PFRecHEdepth3_HS;
+      TH1D *h_PFRecHEdepth4_HS;
+      TH1D *h_PFRecHEdepth5_HS;
+      TH1D *h_PFRecHEdepth6_HS;
+      TH1D *h_PFRecHEdepth7_HS;
+
+      TH1D *h_PFRecHEdepth1_PU;
+      TH1D *h_PFRecHEdepth2_PU;
+      TH1D *h_PFRecHEdepth3_PU;
+      TH1D *h_PFRecHEdepth4_PU;
+      TH1D *h_PFRecHEdepth5_PU;
+      TH1D *h_PFRecHEdepth6_PU;
+      TH1D *h_PFRecHEdepth7_PU;
+
+      TH1D *h_PFRecHEfracdepth1;
+      TH1D *h_PFRecHEfracdepth2;
+      TH1D *h_PFRecHEfracdepth3;
+      TH1D *h_PFRecHEfracdepth4;
+      TH1D *h_PFRecHEfracdepth5;
+      TH1D *h_PFRecHEfracdepth6;
+      TH1D *h_PFRecHEfracdepth7;
+
+      TH1D *h_PFRecHEfracdepth1_HS;
+      TH1D *h_PFRecHEfracdepth2_HS;
+      TH1D *h_PFRecHEfracdepth3_HS;
+      TH1D *h_PFRecHEfracdepth4_HS;
+      TH1D *h_PFRecHEfracdepth5_HS;
+      TH1D *h_PFRecHEfracdepth6_HS;
+      TH1D *h_PFRecHEfracdepth7_HS;
+
+      TH1D *h_PFRecHEfracdepth1_PU;
+      TH1D *h_PFRecHEfracdepth2_PU;
+      TH1D *h_PFRecHEfracdepth3_PU;
+      TH1D *h_PFRecHEfracdepth4_PU;
+      TH1D *h_PFRecHEfracdepth5_PU;
+      TH1D *h_PFRecHEfracdepth6_PU;
+      TH1D *h_PFRecHEfracdepth7_PU;
 
       //====== 2D Histo Declaration =========
       TH2D *h_PFMET_PFMETCandidate;
-      TH2D *h_PFMET_RecMET_noPU;
-      TH2D *h_PFMET_RecMET_depthHE_noPU;
+      TH2D *h_PFMET_RecMET_HS;
+      TH2D *h_PFMET_RecMET_depthHE_HS;
       TH2D *h_PFMET_RecMET_PU;
       TH2D *h_PFMET_RecMET_depthHE_PU;
       TH2D *h_PFMET_RecMET_nodepthHE;
       TH2D *h_depth_RecHE;
-      TH2D *h_depth_RecHE_noPU;
+      TH2D *h_depth_RecHE_HS;
       TH2D *h_depth_RecHE_PU;
-      TH2D *h_depth_fracRecHE_noPU;
-      TH2D *h_depth_fracRecHE_PU;
-      TH2D *h_PFRecMET_PFMET_noPU;
+      TH2D *h_PFRecMET_PFMET_HS;
       TH2D *h_PFRecMET_PFMET_PU;
       TH2D *h_PFRecMET_PFMET;
 
@@ -190,6 +221,10 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       TTree *tpsplit_;
       TTree *events_;
       TTree *matches_;
+
+      TTree *signalFile_;
+      TTree *bckgndFile_;
+
 
       double tp_energy_;
       int tp_ieta_;
@@ -311,49 +346,78 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    //====MET 1D Histograms=================================================================================
    h_PFRecHit = fs->make<TH1D>("h_PFRecHit","Computed PFRecHit from PFCandidate for Charged Hadrons",100,0,100);
    // Charged Hadron Vertex 
-   h_CHPVMPF_noPU = fs->make<TH1D>("h_CHPVMPF_noPU","Charged Hadrons Primary Vertex Z Position", 100,-15,15);
-   h_CHPVMPF_PU = fs->make<TH1D>("h_CHPVMPF_PU" ,"Charged Hadrons PFCandidate Vertex Z Position", 100,-15,15);
+   h_CHPVMPF_HS = fs->make<TH1D>("h_CHPVMPF_HS","Charged Hadrons Primary Vertex Z Position", 500,-15,15);
+   h_CHPVMPF_PU = fs->make<TH1D>("h_CHPVMPF_PU" ,"Charged Hadrons PFCandidate Vertex Z Position", 500,-15,15);
    h_CHPVMPF = fs->make<TH1D>("h_CHPVMPF","Charged Hadrons Vertex Minus PFCandidate Z Position",500,-15,15);
 
    //====MET 2D Histograms=================================================================================
    h_PFMET_PFMETCandidate = fs->make<TH2D>("h_PFMET_PFMETCandidate","PFMET vs PFMET Computed from PFCandidate",100,0,120,100,0,120);
 
    //====Depth Study=================================================================================
-   h_PFMET_RecMET_noPU = fs->make<TH2D>("h_PFMET_RecMET_noPU","no Pileup PF MET vs Rechit MET",100,0,150,100,0,150);
-   h_PFMET_RecMET_depthHE_noPU = fs->make<TH2D>("h_PFMET_RecMET_depthHE_noPU","no Pileup PF MET vs Rechit MET with Depth Threshold",100,0,150,100,0,150);
+   h_PFMET_RecMET_HS = fs->make<TH2D>("h_PFMET_RecMET_HS","no Pileup PF MET vs Rechit MET",100,0,150,100,0,150);
+   h_PFMET_RecMET_depthHE_HS = fs->make<TH2D>("h_PFMET_RecMET_depthHE_HS","no Pileup PF MET vs Rechit MET with Depth Threshold",100,0,150,100,0,150);
    h_PFMET_RecMET_PU = fs->make<TH2D>("h_PFMET_RecMET_PU","Pileup PF MET vs Rechit MET",100,0,150,100,0,150);
    h_PFMET_RecMET_depthHE_PU = fs->make<TH2D>("h_PFMET_RecMET_depthHE_PU","Pileup PF MET vs Rechit MET with Depth Threshold",100,0,150,100,0,150);
    h_PFMET_RecMET_nodepthHE = fs->make<TH2D>("h_PFMET_RecMET_nodepthHE","PF MET vs Rechit MET without Depth Threshold",100,0,150,100,0,150);
-   h_RecMET_noPU = fs->make<TH1D>("h_RecMET_noPU","RecHit MET from no Pileup",100,-10,300);
+   h_RecMET_HS = fs->make<TH1D>("h_RecMET_HS","RecHit MET from no Pileup",100,-10,300);
    h_RecMET_PU = fs->make<TH1D>("h_RecMET_PU","RecHit MET from Pileup",100,-10,300);
    h_RecMET = fs->make<TH1D>("h_RecMET","RecHit MET",100,-10,300);
-   h_depth_RecHE = fs->make<TH2D>("h_depth_RecHE","RechitHE vs Depth",1000,0,10,1000,0,7.5);
-   h_depth_RecHE_noPU = fs->make<TH2D>("h_depth_RecHE_noPU","RechitHE vs Depth for Dz<0.1",1000,0,10,1000,0,7.5);
+   h_depth_RecHE = fs->make<TH2D>("h_depth_RecHE","RechitHE vs Depth",1000,-10,10,1000,0,7.5);
+   h_depth_RecHE_HS = fs->make<TH2D>("h_depth_RecHE_HS","RechitHE vs Depth for Dz<0.1",1000,0,10,1000,0,7.5);
    h_depth_RecHE_PU = fs->make<TH2D>("h_depth_RecHE_PU","RechitHE vs Depth for Dz>0.1",1000,0,10,1000,0,7.5);
 
-   h_RecHEdepth1_noPU = fs->make<TH1D>("h_RecHEdepth1_noPU","Rechit depth == 1 no Pileup",500,-1,10);
-   h_RecHEdepth2_noPU = fs->make<TH1D>("h_RecHEdepth2_noPU","Rechit depth == 2 no Pileup",500,-1,10);
-   h_RecHEdepth3_noPU = fs->make<TH1D>("h_RecHEdepth3_noPU","Rechit depth == 3 no Pileup",500,-1,10);
-   h_RecHEdepth4_noPU = fs->make<TH1D>("h_RecHEdepth4_noPU","Rechit depth == 4 no Pileup",500,-1,10);
-   h_RecHEdepth5_noPU = fs->make<TH1D>("h_RecHEdepth5_noPU","Rechit depth == 5 no Pileup",500,-1,10);
-   h_RecHEdepth6_noPU = fs->make<TH1D>("h_RecHEdepth6_noPU","Rechit depth == 6 no Pileup",500,-1,10);
-   h_RecHEdepth7_noPU = fs->make<TH1D>("h_RecHEdepth7_noPU","Rechit depth == 7 no Pileup",500,-1,10);
+   h_PFRecHEdepth1 = fs->make<TH1D>("h_PFRecHEdepth1","PFRechit depth == 1",500,0,10);
+   h_PFRecHEdepth2 = fs->make<TH1D>("h_PFRecHEdepth2","PFRechit depth == 2",500,0,10);
+   h_PFRecHEdepth3 = fs->make<TH1D>("h_PFRecHEdepth3","PFRechit depth == 3",500,0,10);
+   h_PFRecHEdepth4 = fs->make<TH1D>("h_PFRecHEdepth4","PFRechit depth == 4",500,0,10);
+   h_PFRecHEdepth5 = fs->make<TH1D>("h_PFRecHEdepth5","PFRechit depth == 5",500,0,10);
+   h_PFRecHEdepth6 = fs->make<TH1D>("h_PFRecHEdepth6","PFRechit depth == 6",500,0,10);
+   h_PFRecHEdepth7 = fs->make<TH1D>("h_PFRecHEdepth7","PFRechit depth == 7",500,0,10);
 
-   h_RecHEdepth1_PU = fs->make<TH1D>("h_RecHEdepth1_PU","Rechit depth == 1 Pileup",500,-1,10);
-   h_RecHEdepth2_PU = fs->make<TH1D>("h_RecHEdepth2_PU","Rechit depth == 2 Pileup",500,-1,10);
-   h_RecHEdepth3_PU = fs->make<TH1D>("h_RecHEdepth3_PU","Rechit depth == 3 Pileup",500,-1,10);
-   h_RecHEdepth4_PU = fs->make<TH1D>("h_RecHEdepth4_PU","Rechit depth == 4 Pileup",500,-1,10);
-   h_RecHEdepth5_PU = fs->make<TH1D>("h_RecHEdepth5_PU","Rechit depth == 5 Pileup",500,-1,10);
-   h_RecHEdepth6_PU = fs->make<TH1D>("h_RecHEdepth6_PU","Rechit depth == 6 Pileup",500,-1,10);
-   h_RecHEdepth7_PU = fs->make<TH1D>("h_RecHEdepth7_PU","Rechit depth == 7 Pileup",500,-1,10);
+   h_PFRecHEdepth1_HS = fs->make<TH1D>("h_PFRecHEdepth1_HS","PFRechit depth == 1 Hard Scatter",500,0,10);
+   h_PFRecHEdepth2_HS = fs->make<TH1D>("h_PFRecHEdepth2_HS","PFRechit depth == 2 Hard Scatter",500,0,10);
+   h_PFRecHEdepth3_HS = fs->make<TH1D>("h_PFRecHEdepth3_HS","PFRechit depth == 3 Hard Scatter",500,0,10);
+   h_PFRecHEdepth4_HS = fs->make<TH1D>("h_PFRecHEdepth4_HS","PFRechit depth == 4 Hard Scatter",500,0,10);
+   h_PFRecHEdepth5_HS = fs->make<TH1D>("h_PFRecHEdepth5_HS","PFRechit depth == 5 Hard Scatter",500,0,10);
+   h_PFRecHEdepth6_HS = fs->make<TH1D>("h_PFRecHEdepth6_HS","PFRechit depth == 6 Hard Scatter",500,0,10);
+   h_PFRecHEdepth7_HS = fs->make<TH1D>("h_PFRecHEdepth7_HS","PFRechit depth == 7 Hard Scatter",500,0,10);
 
-   h_depth_fracRecHE_noPU = fs->make<TH2D>("h_depth_fracRecHE_noPU","No Pileup Fractio RecHit energy vs Depth",1000,0,10,100,0,2);
-   h_depth_fracRecHE_PU = fs->make<TH2D>("h_depth_fracRecHE_PU","Pileup Fractio RecHit energy vs Depth",1000,0,10,100,0,2);
-   h_PFRecHit_Et = fs->make<TH1D>("h_PFRecHit_Et","Sum Et of PF hits in ECAL EB, HCAL HB",100,0,250);
-   h_PFRecMET_PFMET_noPU = fs->make<TH2D>("h_PFRecMET_PFMET_noPU","noPU PFRecMET Vs PFMET",100,0,200,100,0,200);
+   h_PFRecHEdepth1_PU = fs->make<TH1D>("h_PFRecHEdepth1_PU","PFRechit depth == 1 Pileup",500,0,10);
+   h_PFRecHEdepth2_PU = fs->make<TH1D>("h_PFRecHEdepth2_PU","PFRechit depth == 2 Pileup",500,0,10);
+   h_PFRecHEdepth3_PU = fs->make<TH1D>("h_PFRecHEdepth3_PU","PFRechit depth == 3 Pileup",500,0,10);
+   h_PFRecHEdepth4_PU = fs->make<TH1D>("h_PFRecHEdepth4_PU","PFRechit depth == 4 Pileup",500,0,10);
+   h_PFRecHEdepth5_PU = fs->make<TH1D>("h_PFRecHEdepth5_PU","PFRechit depth == 5 Pileup",500,0,10);
+   h_PFRecHEdepth6_PU = fs->make<TH1D>("h_PFRecHEdepth6_PU","PFRechit depth == 6 Pileup",500,0,10);
+   h_PFRecHEdepth7_PU = fs->make<TH1D>("h_PFRecHEdepth7_PU","PFRechit depth == 7 Pileup",500,0,10);
+
+   h_PFRecHEfracdepth1 = fs->make<TH1D>("h_PFRecHEfracdepth1","PFRechit fraction depth == 1",500,0,10);
+   h_PFRecHEfracdepth2 = fs->make<TH1D>("h_PFRecHEfracdepth2","PFRechit fraction depth == 2",500,0,10);
+   h_PFRecHEfracdepth3 = fs->make<TH1D>("h_PFRecHEfracdepth3","PFRechit fraction depth == 3",500,0,10);
+   h_PFRecHEfracdepth4 = fs->make<TH1D>("h_PFRecHEfracdepth4","PFRechit fraction depth == 4",500,0,10);
+   h_PFRecHEfracdepth5 = fs->make<TH1D>("h_PFRecHEfracdepth5","PFRechit fraction depth == 5",500,0,10);
+   h_PFRecHEfracdepth6 = fs->make<TH1D>("h_PFRecHEfracdepth6","PFRechit fraction depth == 6",500,0,10);
+   h_PFRecHEfracdepth7 = fs->make<TH1D>("h_PFRecHEfracdepth7","PFRechit fraction depth == 7",500,0,10);
+
+   h_PFRecHEfracdepth1_HS = fs->make<TH1D>("h_PFRecHEfracdepth1_HS","PFRechit fraction depth == 1 Hard Scatter",500,0,10);
+   h_PFRecHEfracdepth2_HS = fs->make<TH1D>("h_PFRecHEfracdepth2_HS","PFRechit fraction depth == 2 Hard Scatter",500,0,10);
+   h_PFRecHEfracdepth3_HS = fs->make<TH1D>("h_PFRecHEfracdepth3_HS","PFRechit fraction depth == 3 Hard Scatter",500,0,10);
+   h_PFRecHEfracdepth4_HS = fs->make<TH1D>("h_PFRecHEfracdepth4_HS","PFRechit fraction depth == 4 Hard Scatter",500,0,10);
+   h_PFRecHEfracdepth5_HS = fs->make<TH1D>("h_PFRecHEfracdepth5_HS","PFRechit fraction depth == 5 Hard Scatter",500,0,10);
+   h_PFRecHEfracdepth6_HS = fs->make<TH1D>("h_PFRecHEfracdepth6_HS","PFRechit fraction depth == 6 Hard Scatter",500,0,10);
+   h_PFRecHEfracdepth7_HS = fs->make<TH1D>("h_PFRecHEfracdepth7_HS","PFRechit fraction depth == 7 Hard Scatter",500,0,10);
+
+   h_PFRecHEfracdepth1_PU = fs->make<TH1D>("h_PFRecHEfracdepth1_PU","PFRechit fraction depth == 1 Pileup",500,0,10);
+   h_PFRecHEfracdepth2_PU = fs->make<TH1D>("h_PFRecHEfracdepth2_PU","PFRechit fraction depth == 2 Pileup",500,0,10);
+   h_PFRecHEfracdepth3_PU = fs->make<TH1D>("h_PFRecHEfracdepth3_PU","PFRechit fraction depth == 3 Pileup",500,0,10);
+   h_PFRecHEfracdepth4_PU = fs->make<TH1D>("h_PFRecHEfracdepth4_PU","PFRechit fraction depth == 4 Pileup",500,0,10);
+   h_PFRecHEfracdepth5_PU = fs->make<TH1D>("h_PFRecHEfracdepth5_PU","PFRechit fraction depth == 5 Pileup",500,0,10);
+   h_PFRecHEfracdepth6_PU = fs->make<TH1D>("h_PFRecHEfracdepth6_PU","PFRechit fraction depth == 6 Pileup",500,0,10);
+   h_PFRecHEfracdepth7_PU = fs->make<TH1D>("h_PFRecHEfracdepth7_PU","PFRechit fraction depth == 7 Pileup",500,0,10);
+
+   h_PFRecMET_PFMET_HS = fs->make<TH2D>("h_PFRecMET_PFMET_HS","HS PFRecMET Vs PFMET",100,0,200,100,0,200);
    h_PFRecMET_PFMET_PU = fs->make<TH2D>("h_PFRecMET_PFMET_PU","PU PFRecMET Vs PFMET",100,0,200,100,0,200);
    h_PFRecMET_PFMET = fs->make<TH2D>("h_PFRecMET_PFMET","PFRecMET Vs PFMET",100,0,200,100,0,200);
-
+ 
 }
 
 HcalCompareLegacyChains::~HcalCompareLegacyChains() {}
@@ -403,17 +467,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    event.getByToken(inputTagPFCandidates_, pfCandidate);
 
    double PFRecHit[7] = {0.0};
-   double PFRecHit_tot[7] = {0.0};
-   double PFRecHit_Et = 0;
-   double HEx_D1, HEx_D2, HEx_D3, HEx_D4, HEx_D5, HEx_D6, HEx_D7 = 0;
-   double HEy_D1, HEy_D2, HEy_D3, HEy_D4, HEy_D5, HEy_D6, HEy_D7 = 0;
-   double HEx_d1, HEx_d2, HEx_d3, HEx_d4, HEx_d5, HEx_d6, HEx_d7 = 0;
-   double HEy_d1, HEy_d2, HEy_d3, HEy_d4, HEy_d5, HEy_d6, HEy_d7 = 0;
-   double HB_Ex, HB_Ey, Ecal_Ex, Ecal_Ey = 0;
-   double HE_Ex, HE_Ey, Ex, Ey = 0;
-   double HEx_PU, HEy_PU, Ex_PU, Ey_PU = 0;
-   double HEx_noPU, HEy_noPU, Ex_noPU, Ey_noPU = 0;
-   double PFRecMET, PFRecMET_PU, PFRecMET_noPU = 0;
+   double RH_D[7] = {0.0};
+   double RH_PU_D[7] = {0.0};
+   double RH_HS_D[7] = {0.0};
    double posX,posY,posZ = 0;
    for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop
      const reco::PFCandidate& pfc = *ci;
@@ -428,226 +484,120 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
      for ( reco::PFCandidate::ElementsInBlocks::const_iterator pfBlock = pfBlocks.begin(); pfBlock != pfBlocks.end(); ++pfBlock ) {//PFBlock Loop
        const edm::OwnVector<reco::PFBlockElement>& pfBlockElements = pfBlock->first->elements();
        for ( edm::OwnVector<reco::PFBlockElement>::const_iterator pfBlockElement = pfBlockElements.begin(); pfBlockElement != pfBlockElements.end(); ++pfBlockElement ) {//PFBlock Elements Loop
-	 HE_Ex = 0;
-         HE_Ey = 0;
-	 HEx_D1 = 0;
-         HEx_D2 = 0;
-         HEx_D3 = 0;
-         HEx_D4 = 0;
-         HEx_D5 = 0;
-         HEx_D6 = 0;
-         HEx_D7 = 0;
-
-         HEy_D1 = 0;
-         HEy_D2 = 0;
-         HEy_D3 = 0;
-         HEy_D4 = 0;
-         HEy_D5 = 0;
-         HEy_D6 = 0;
-         HEy_D7 = 0;
-
-         HEx_d1 = 0;
-         HEx_d2 = 0;
-         HEx_d3 = 0;
-         HEx_d4 = 0;
-         HEx_d5 = 0;
-         HEx_d6 = 0;
-         HEx_d7 = 0;
-
-         HEy_d1 = 0;
-         HEy_d2 = 0;
-         HEy_d3 = 0;
-         HEy_d4 = 0;
-         HEy_d5 = 0;
-         HEy_d6 = 0;
-         HEy_d7 = 0;
-	 Ecal_Ex = 0;
-         Ecal_Ey = 0;
-	 HB_Ex = 0;
-	 HB_Ey = 0;
-
          if ( pfBlockElement->clusterRef().isNonnull() ) {
            reco::PFClusterRef pfCluster = pfBlockElement->clusterRef();
-           const std::vector<reco::PFRecHitFraction>& pfRecHitFractions = pfCluster->recHitFractions();
-           for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop
-             const reco::PFRecHitRef& pfRecHits = it->recHitRef();
-             posX = pfRecHits->position().x();
-             posY = pfRecHits->position().y();
-             posZ = pfRecHits->position().z();
-             math::XYZPoint pflowPos(posX,posY,posZ);
-             double Eta    = pflowPos.eta();
-             double Phi    = pflowPos.phi(); 
-             unsigned int depth = pfRecHits->depth(); 
-             PFRecHit[depth] = pfRecHits->energy()/cosh(Eta); 
-             PFRecHit_tot[depth] += pfRecHits->energy()/cosh(Eta);
-	     if (pfCluster->layer() == PFLayer::HCAL_ENDCAP && 1.3<Eta && Eta<=3) {
-               h_depth_RecHE->Fill(depth,PFRecHit[depth]);
-               h_depth_RecHE->SetMarkerStyle(3);
-               h_depth_RecHE->SetMarkerSize(1.5);
-               h_depth_RecHE->GetXaxis()->SetTitle("depth");
-               h_depth_RecHE->GetYaxis()->SetTitle("PFRecHit[depth] (GeV)");
-	       HE_Ex += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-               HE_Ey += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-
-       	       if(fabs(dz)<0.1){//no Pileup
-	         h_CHPVMPF_noPU->Fill(dz);
-                 h_depth_RecHE_noPU->Fill(depth,PFRecHit[depth]);
-                 h_depth_RecHE_noPU->SetMarkerStyle(3);
-                 h_depth_RecHE_noPU->SetMarkerColor(2);
-                 h_depth_RecHE_noPU->SetMarkerSize(1.5);
-                 h_depth_RecHE_noPU->GetXaxis()->SetTitle("depth");
-                 h_depth_RecHE_noPU->GetYaxis()->SetTitle("PFRecHit (GeV)");
-
-                 h_depth_fracRecHE_noPU->Fill(depth,PFRecHit[depth]/PFRecHit_tot[depth]);
-                 h_depth_fracRecHE_noPU->SetMarkerStyle(3);
-                 h_depth_fracRecHE_noPU->SetMarkerColor(6);
-                 h_depth_fracRecHE_noPU->SetMarkerSize(1.5);
-                 h_depth_fracRecHE_noPU->GetXaxis()->SetTitle("depth");
-                 h_depth_fracRecHE_noPU->GetYaxis()->SetTitle("RechitHE (GeV)");
-                 if(depth == 1 && (pfRecHits->energy()/cosh(Eta))>0.38){
-                   h_RecHEdepth1_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_D1 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D1 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 2 && (pfRecHits->energy()/cosh(Eta))>0.54){
-                    h_RecHEdepth2_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-	            HEx_D2 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D2 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 3 && (pfRecHits->energy()/cosh(Eta))>0.3){
-                    h_RecHEdepth3_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_D3 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D3 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 4 && (pfRecHits->energy()/cosh(Eta))>0.2){
-                    h_RecHEdepth4_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_D4 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D4 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 5 && (pfRecHits->energy()/cosh(Eta))>0.17){
-                    h_RecHEdepth5_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_D5 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D5 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 6 && (pfRecHits->energy()/cosh(Eta))>0.167){
-                    h_RecHEdepth6_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_D6 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D6 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 7 && (pfRecHits->energy()/cosh(Eta))>0.125){
-                    h_RecHEdepth7_noPU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_D7 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_D7 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-	       }
-               if(fabs(dz)>0.1){//Pileup
-                 h_CHPVMPF_PU->Fill(dz);
-                 h_depth_RecHE_PU->Fill(depth,PFRecHit[depth]);
-                 h_depth_RecHE_PU->SetMarkerStyle(3);
-                 h_depth_RecHE_PU->SetMarkerColor(4);
-                 h_depth_RecHE_PU->SetMarkerSize(1.5);
-                 h_depth_RecHE_PU->GetXaxis()->SetTitle("depth");
-                 h_depth_RecHE_PU->GetYaxis()->SetTitle("PFRecHit (GeV)");
-
-                 h_depth_fracRecHE_PU->Fill(depth,PFRecHit[depth]/PFRecHit_tot[depth]);
-                 h_depth_fracRecHE_PU->SetMarkerStyle(3);
-                 h_depth_fracRecHE_PU->SetMarkerColor(9);
-                 h_depth_fracRecHE_PU->SetMarkerSize(1.5);
-                 h_depth_fracRecHE_PU->GetXaxis()->SetTitle("depth");
-                 h_depth_fracRecHE_PU->GetYaxis()->SetTitle("RechitHE (GeV)");
-                 if(depth == 1 && (pfRecHits->energy()/cosh(Eta))>0.38){
-                   h_RecHEdepth1_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                   HEx_d1 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                   HEy_d1 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 2 && (pfRecHits->energy()/cosh(Eta))>0.54){
-                    h_RecHEdepth2_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_d2 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_d2 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 3 && (pfRecHits->energy()/cosh(Eta))>0.3){
-                    h_RecHEdepth3_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_d3 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_d3 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 4 && (pfRecHits->energy()/cosh(Eta))>0.2){
-                    h_RecHEdepth4_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_d4 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_d4 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 5 && (pfRecHits->energy()/cosh(Eta))>0.17){
-                    h_RecHEdepth5_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_d5 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_d5 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 6 && (pfRecHits->energy()/cosh(Eta))>0.167){
-                    h_RecHEdepth6_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_d6 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_d6 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-                 if(depth == 7 && (pfRecHits->energy()/cosh(Eta))>0.125){
-                    h_RecHEdepth7_PU->Fill(pfRecHits->energy()/cosh(Eta));
-                    HEx_d7 += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-                    HEy_d7 += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-                 }
-               }
-	     }	 
-	     if(pfCluster->layer() == PFLayer::HCAL_BARREL2 && Eta<1.3){
-               HB_Ex += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-               HB_Ey += sin(Phi)*pfRecHits->energy()/cosh(Eta);
-               PFRecHit_Et = pfRecHits->energy()/cosh(Eta);
-               h_PFRecHit_Et->Fill(PFRecHit_Et);
-             }
-	     if (pfCluster->layer() == PFLayer::ECAL_ENDCAP || pfCluster->layer() == PFLayer::ECAL_BARREL) {
-	       Ecal_Ex += cos(Phi)*pfRecHits->energy()/cosh(Eta);
-               Ecal_Ey += sin(Phi)*pfRecHits->energy()/cosh(Eta);
+	   if (pfCluster->layer() == PFLayer::HCAL_ENDCAP){//HCAL ENDCAP
+             const std::vector<reco::PFRecHitFraction>& pfRecHitFractions = pfCluster->recHitFractions();
+             for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop to compute sum of PFRecHits within a depth
+               const reco::PFRecHitRef& pfRecHits = it->recHitRef();
+               posX = pfRecHits->position().x();
+               posY = pfRecHits->position().y();
+               posZ = pfRecHits->position().z();
+               math::XYZPoint pflowPos(posX,posY,posZ);
+               double Eta    = pflowPos.eta();
+               unsigned int depth = pfRecHits->depth();
+	       if(1.3<Eta && Eta<=2.5){//Tracker Area
+	         RH_D[depth] += pfRecHits->energy()/cosh(Eta);
+                 if(fabs(dz)<0.1){RH_HS_D[depth] += pfRecHits->energy()/cosh(Eta);}//Hard Scatter
+                 if(fabs(dz)>0.1){RH_PU_D[depth] += pfRecHits->energy()/cosh(Eta);}//Pileup
 	     }
-             HEx_noPU = HEx_d1 + HEx_d2 + HEx_d3 + HEx_d4 + HEx_d5 + HEx_d6 + HEx_d7;
-             HEy_noPU = HEy_d1 + HEy_d2 + HEy_d3 + HEy_d4 + HEy_d5 + HEy_d6 + HEy_d7;
-             Ex_noPU = HEx_noPU + HB_Ex + Ecal_Ex;
-             Ey_noPU = HEy_noPU + HB_Ey + Ecal_Ey;
-             PFRecMET_noPU = sqrt(Ex_noPU*Ex_noPU+Ey_noPU*Ey_noPU);
+             for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop
+               const reco::PFRecHitRef& pfRecHits = it->recHitRef();
+               posX = pfRecHits->position().x();
+               posY = pfRecHits->position().y();
+               posZ = pfRecHits->position().z();
+               math::XYZPoint pflowPos(posX,posY,posZ);
+               double Eta    = pflowPos.eta();
+	       if(1.3<Eta && Eta<=2.5){//Tracker Area
+	         unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
+                 //unsigned int depth1 = pfCluster->depth();//gives 5 depths from: depth = 0 to depth = 7
+                 PFRecHit[depth] = pfRecHits->energy()/cosh(Eta); 
+                 h_depth_RecHE->Fill(depth,PFRecHit[depth]);
+                 h_depth_RecHE->SetMarkerStyle(3);
+                 h_depth_RecHE->SetMarkerSize(1.5);
+                 h_depth_RecHE->GetXaxis()->SetTitle("depth");
+                 h_depth_RecHE->GetYaxis()->SetTitle("PFRecHit[depth] (GeV)");
 
-             HEx_PU = HEx_D1 + HEx_D2 + HEx_D3 + HEx_D4 + HEx_D5 + HEx_D6 + HEx_D7;
-             HEy_PU = HEy_D1 + HEy_D2 + HEy_D3 + HEy_D4 + HEy_D5 + HEy_D6 + HEy_D7;
-             Ex_PU = HEx_PU + HB_Ex + Ecal_Ex;
-             Ey_PU = HEy_PU + HB_Ey + Ecal_Ey;
-	     PFRecMET_PU = sqrt(Ex_PU*Ex_PU+Ey_PU*Ey_PU);
+                 if(depth == 1){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
+                 if(depth == 2){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
+                 if(depth == 3){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
+                 if(depth == 4){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
+                 if(depth == 5){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
+                 if(depth == 6){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
+                 if(depth == 7){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
 
-             Ex = HE_Ex + HB_Ex + Ecal_Ex;
-             Ey = HE_Ey + HB_Ey + Ecal_Ey;
-	     PFRecMET = sqrt(Ex*Ex+Ey*Ey);
-           }   //End loop over PFCluster
-         }
-       }  //Loop over PFBlockElements
+                 if(depth == 1){h_PFRecHEfracdepth1->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+                 if(depth == 2){h_PFRecHEfracdepth2->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+                 if(depth == 3){h_PFRecHEfracdepth3->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+                 if(depth == 4){h_PFRecHEfracdepth4->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+                 if(depth == 5){h_PFRecHEfracdepth5->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+                 if(depth == 6){h_PFRecHEfracdepth6->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+                 if(depth == 7){h_PFRecHEfracdepth7->Fill(PFRecHit[depth]/RH_D[depth-1]);}
+
+       	         if(fabs(dz)<0.1){//Hard Scatter
+	           h_CHPVMPF_HS->Fill(dz);
+                   h_depth_RecHE_HS->Fill(depth,PFRecHit[depth]);
+                   h_depth_RecHE_HS->SetMarkerStyle(3);
+                   h_depth_RecHE_HS->SetMarkerColor(2);
+                   h_depth_RecHE_HS->SetMarkerSize(1.5);
+                   h_depth_RecHE_HS->GetXaxis()->SetTitle("depth");
+                   h_depth_RecHE_HS->GetYaxis()->SetTitle("PFRecHit (GeV)");
+
+                   if(depth == 1){h_PFRecHEdepth1_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 2){h_PFRecHEdepth2_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 3){h_PFRecHEdepth3_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 4){h_PFRecHEdepth4_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 5){h_PFRecHEdepth5_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 6){h_PFRecHEdepth6_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 7){h_PFRecHEdepth7_HS->Fill(PFRecHit[depth]);}
+
+                   if(depth == 1){h_PFRecHEfracdepth1_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+                   if(depth == 2){h_PFRecHEfracdepth2_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+                   if(depth == 3){h_PFRecHEfracdepth3_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+                   if(depth == 4){h_PFRecHEfracdepth4_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+                   if(depth == 5){h_PFRecHEfracdepth5_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+                   if(depth == 6){h_PFRecHEfracdepth6_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+                   if(depth == 7){h_PFRecHEfracdepth7_HS->Fill(PFRecHit[depth]/RH_HS_D[depth-1]);}
+	         }
+                 if(fabs(dz)>0.1){//Pileup
+                   h_CHPVMPF_PU->Fill(dz);
+                   h_depth_RecHE_PU->Fill(depth,PFRecHit[depth]);
+                   h_depth_RecHE_PU->SetMarkerStyle(3);
+                   h_depth_RecHE_PU->SetMarkerColor(4);
+                   h_depth_RecHE_PU->SetMarkerSize(1.5);
+                   h_depth_RecHE_PU->GetXaxis()->SetTitle("depth");
+                   h_depth_RecHE_PU->GetYaxis()->SetTitle("PFRecHit (GeV)");
+
+                   if(depth == 1){h_PFRecHEdepth1_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 2){h_PFRecHEdepth2_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 3){h_PFRecHEdepth3_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 4){h_PFRecHEdepth4_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 5){h_PFRecHEdepth5_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 6){h_PFRecHEdepth6_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 7){h_PFRecHEdepth7_PU->Fill(PFRecHit[depth]);}
+
+                   if(depth == 1){h_PFRecHEfracdepth1_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+                   if(depth == 2){h_PFRecHEfracdepth2_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+                   if(depth == 3){h_PFRecHEfracdepth3_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+                   if(depth == 4){h_PFRecHEfracdepth4_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+                   if(depth == 5){h_PFRecHEfracdepth5_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+                   if(depth == 6){h_PFRecHEfracdepth6_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+                   if(depth == 7){h_PFRecHEfracdepth7_PU->Fill(PFRecHit[depth]/RH_PU_D[depth-1]);}
+
+                 }
+	       }//Tracker area 
+             }//End loop over PFCluster
+           }//Restrict HCAL ENDCAP
+	 }	  
+       }
+      }  //Loop over PFBlockElements
      }  //Loop over PFBlock
    }  //Loop over PFCandidate
-                h_PFRecMET_PFMET->Fill(PFRecMET,theMet.et());
-   h_PFRecMET_PFMET->SetMarkerStyle(3);
-   h_PFRecMET_PFMET->SetMarkerColor(4);
-   h_PFRecMET_PFMET->SetMarkerSize(1.5);
-   h_PFRecMET_PFMET->GetXaxis()->SetTitle("PFRecMET (GeV)");
-   h_PFRecMET_PFMET->GetYaxis()->SetTitle("PFMET (GeV)");
-   h_PFRecMET_PFMET_PU->Fill(PFRecMET_PU,theMet.et());
-   h_PFRecMET_PFMET_PU->SetMarkerStyle(3);
-   h_PFRecMET_PFMET_PU->SetMarkerColor(4);
-   h_PFRecMET_PFMET_PU->SetMarkerSize(1.5);
-   h_PFRecMET_PFMET_PU->GetXaxis()->SetTitle("PFRecMET_PU (GeV)");
-   h_PFRecMET_PFMET_PU->GetYaxis()->SetTitle("PFMET (GeV)");
-   h_PFRecMET_PFMET_noPU->Fill(PFRecMET_noPU,theMet.et());
-   h_PFRecMET_PFMET_noPU->SetMarkerStyle(3);
-   h_PFRecMET_PFMET_noPU->SetMarkerColor(4);
-   h_PFRecMET_PFMET_noPU->SetMarkerSize(1.5);
-   h_PFRecMET_PFMET_noPU->GetXaxis()->SetTitle("PFRecMET_noPU (GeV)");
-   h_PFRecMET_PFMET_noPU->GetYaxis()->SetTitle("PFMET (GeV)");
-
-
    edm::ESHandle<HcalTrigTowerGeometry> tpd_geo_h;
    setup.get<CaloGeometryRecord>().get(tpd_geo_h);
    edm::ESHandle<HcalDbService> conditions;
    setup.get<HcalDbRecord>().get(conditions);
    const HcalTrigTowerGeometry& tpd_geo = *tpd_geo_h;
-
    // ==========
    // Dataframes
    // ==========
