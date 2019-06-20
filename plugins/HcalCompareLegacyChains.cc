@@ -385,20 +385,20 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    edm::Handle<reco::VertexCollection> PVs;
    event.getByToken(pvToken_, PVs);
    math::XYZPoint leadPV(0,0,0);
+   if (!PVs->empty() && !((*PVs)[0].isFake())) {//Offline Primary Vertices
+     leadPV = math::XYZPoint((*PVs)[0].x(),(*PVs)[0].y(),(*PVs)[0].z());
+   }
 
    //================ PFRecHits from PFCandidates->PFBlocks->PFClusters->PFRecHitFractions =============================================
    edm::Handle<reco::PFCandidateCollection> pfCandidate;
    event.getByToken(inputTagPFCandidates_, pfCandidate);
 
-   double PFRecHit[7] = {0.0};
+   double PFRecHit = 0;
    double posX,posY,posZ = 0;
    for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop
      const reco::PFCandidate& pfc = *ci;
      if ( pfc.particleId() != 1 ) continue;// Charged Hadron Particles
      math::XYZPoint vtx = pfc.vertex();//PFCandidate Vertices
-     if (!PVs->empty() && !((*PVs)[0].isFake())) {//Offline Primary Vertices
-       leadPV = math::XYZPoint((*PVs)[0].x(),(*PVs)[0].y(),(*PVs)[0].z());
-     }
      double dz = vtx.z()-leadPV.z();//Cut on Hard Scatter and Pileup
      h_CHPVMPF->Fill(dz);
      const reco::PFCandidate::ElementsInBlocks& pfBlocks = ci->elementsInBlocks();//PFBlocks pointer from elements in the block
@@ -416,58 +416,58 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
                posZ = pfRecHits->position().z();
                math::XYZPoint pflowPos(posX,posY,posZ);
                double Eta    = pflowPos.eta();
-	       if(1.3<Eta && Eta<=2.5){//Tracker Area
+	       if(1.3<fabs(Eta) && fabs(Eta)<=2.5){//Tracker Area
 	         unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
-                 //unsigned int depth1 = pfCluster->depth();//gives 5 depths from: depth = 0 to depth = 7(?)
-                 PFRecHit[depth] = pfRecHits->energy()/cosh(Eta); 
-                 h_depth_RecHE->Fill(depth,PFRecHit[depth]);
+                 //unsigned int depth1 = pfCluster->depth();//gives 5 depths from: depth = 0 to depth = 5(?)
+                 PFRecHit = pfRecHits->energy()/cosh(Eta); 
+                 h_depth_RecHE->Fill(depth,PFRecHit);
                  h_depth_RecHE->SetMarkerStyle(3);
                  h_depth_RecHE->SetMarkerSize(1.5);
                  h_depth_RecHE->GetXaxis()->SetTitle("depth");
                  h_depth_RecHE->GetYaxis()->SetTitle("PFRecHit[depth] (GeV)");
 
-                 if(depth == 1){h_PFRecHEdepth1->Fill(PFRecHit[depth]);}
-                 if(depth == 2){h_PFRecHEdepth2->Fill(PFRecHit[depth]);}
-                 if(depth == 3){h_PFRecHEdepth3->Fill(PFRecHit[depth]);}
-                 if(depth == 4){h_PFRecHEdepth4->Fill(PFRecHit[depth]);}
-                 if(depth == 5){h_PFRecHEdepth5->Fill(PFRecHit[depth]);}
-                 if(depth == 6){h_PFRecHEdepth6->Fill(PFRecHit[depth]);}
-                 if(depth == 7){h_PFRecHEdepth7->Fill(PFRecHit[depth]);}
+                 if(depth == 1){h_PFRecHEdepth1->Fill(PFRecHit);}
+                 if(depth == 2){h_PFRecHEdepth2->Fill(PFRecHit);}
+                 if(depth == 3){h_PFRecHEdepth3->Fill(PFRecHit);}
+                 if(depth == 4){h_PFRecHEdepth4->Fill(PFRecHit);}
+                 if(depth == 5){h_PFRecHEdepth5->Fill(PFRecHit);}
+                 if(depth == 6){h_PFRecHEdepth6->Fill(PFRecHit);}
+                 if(depth == 7){h_PFRecHEdepth7->Fill(PFRecHit);}
 
        	         if(fabs(dz)<0.1){//Hard Scatter
 	           h_CHPVMPF_HS->Fill(dz);
-                   h_depth_RecHE_HS->Fill(depth,PFRecHit[depth]);
+                   h_depth_RecHE_HS->Fill(depth,PFRecHit);
                    h_depth_RecHE_HS->SetMarkerStyle(3);
                    h_depth_RecHE_HS->SetMarkerColor(2);
                    h_depth_RecHE_HS->SetMarkerSize(1.5);
                    h_depth_RecHE_HS->GetXaxis()->SetTitle("depth");
                    h_depth_RecHE_HS->GetYaxis()->SetTitle("PFRecHit (GeV)");
 
-                   if(depth == 1){h_PFRecHEdepth1_HS->Fill(PFRecHit[depth]);}
-                   if(depth == 2){h_PFRecHEdepth2_HS->Fill(PFRecHit[depth]);}
-                   if(depth == 3){h_PFRecHEdepth3_HS->Fill(PFRecHit[depth]);}
-                   if(depth == 4){h_PFRecHEdepth4_HS->Fill(PFRecHit[depth]);}
-                   if(depth == 5){h_PFRecHEdepth5_HS->Fill(PFRecHit[depth]);}
-                   if(depth == 6){h_PFRecHEdepth6_HS->Fill(PFRecHit[depth]);}
-                   if(depth == 7){h_PFRecHEdepth7_HS->Fill(PFRecHit[depth]);}
+                   if(depth == 1){h_PFRecHEdepth1_HS->Fill(PFRecHit);}
+                   if(depth == 2){h_PFRecHEdepth2_HS->Fill(PFRecHit);}
+                   if(depth == 3){h_PFRecHEdepth3_HS->Fill(PFRecHit);}
+                   if(depth == 4){h_PFRecHEdepth4_HS->Fill(PFRecHit);}
+                   if(depth == 5){h_PFRecHEdepth5_HS->Fill(PFRecHit);}
+                   if(depth == 6){h_PFRecHEdepth6_HS->Fill(PFRecHit);}
+                   if(depth == 7){h_PFRecHEdepth7_HS->Fill(PFRecHit);}
 
 	         }
                  if(fabs(dz)>0.1){//Pileup
                    h_CHPVMPF_PU->Fill(dz);
-                   h_depth_RecHE_PU->Fill(depth,PFRecHit[depth]);
+                   h_depth_RecHE_PU->Fill(depth,PFRecHit);
                    h_depth_RecHE_PU->SetMarkerStyle(3);
                    h_depth_RecHE_PU->SetMarkerColor(4);
                    h_depth_RecHE_PU->SetMarkerSize(1.5);
                    h_depth_RecHE_PU->GetXaxis()->SetTitle("depth");
                    h_depth_RecHE_PU->GetYaxis()->SetTitle("PFRecHit (GeV)");
 
-                   if(depth == 1){h_PFRecHEdepth1_PU->Fill(PFRecHit[depth]);}
-                   if(depth == 2){h_PFRecHEdepth2_PU->Fill(PFRecHit[depth]);}
-                   if(depth == 3){h_PFRecHEdepth3_PU->Fill(PFRecHit[depth]);}
-                   if(depth == 4){h_PFRecHEdepth4_PU->Fill(PFRecHit[depth]);}
-                   if(depth == 5){h_PFRecHEdepth5_PU->Fill(PFRecHit[depth]);}
-                   if(depth == 6){h_PFRecHEdepth6_PU->Fill(PFRecHit[depth]);}
-                   if(depth == 7){h_PFRecHEdepth7_PU->Fill(PFRecHit[depth]);}
+                   if(depth == 1){h_PFRecHEdepth1_PU->Fill(PFRecHit);}
+                   if(depth == 2){h_PFRecHEdepth2_PU->Fill(PFRecHit);}
+                   if(depth == 3){h_PFRecHEdepth3_PU->Fill(PFRecHit);}
+                   if(depth == 4){h_PFRecHEdepth4_PU->Fill(PFRecHit);}
+                   if(depth == 5){h_PFRecHEdepth5_PU->Fill(PFRecHit);}
+                   if(depth == 6){h_PFRecHEdepth6_PU->Fill(PFRecHit);}
+                   if(depth == 7){h_PFRecHEdepth7_PU->Fill(PFRecHit);}
 
                  }
 	       }//Tracker area 
