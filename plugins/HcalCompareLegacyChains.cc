@@ -19,6 +19,10 @@
 
 
 // system include files
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 #include <memory>
 
 // user include files
@@ -173,6 +177,9 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       TH1D *h_PFRecHEdepth5_PU;
       TH1D *h_PFRecHEdepth6_PU;
       TH1D *h_PFRecHEdepth7_PU;
+      TH1D *h_PFRecSum;
+      TH1D *h_PFRecSum_HS;
+      TH1D *h_PFRecSum_PU;
 
       //====== 2D Histo Declaration =========
       TH2D *h_depth_RecHE;
@@ -312,11 +319,21 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    h_CHPVMPF = fs->make<TH1D>("h_CHPVMPF","Charged Hadrons Vertex Minus PFCandidate Z Position",500,-15,15);
 
    //====MET 2D Histograms=================================================================================
+   h_PFRecSum = fs->make<TH1D>("h_PFRecSum","PFRecHit Sum in HE", 100,0,700);
+   h_PFRecSum_HS = fs->make<TH1D>("h_PFRecSum_HS","PFRecHit Sum in HE for HS", 100,0,700);
+   h_PFRecSum_PU = fs->make<TH1D>("h_PFRecSum_PU","PFRecHit Sum in HE for PU", 100,0,700);
+
 
    //====Depth Study=================================================================================
    h_depth_RecHE = fs->make<TH2D>("h_depth_RecHE","RechitHE vs Depth",1000,0,8,1000,0,7.5);
    h_depth_RecHE_HS = fs->make<TH2D>("h_depth_RecHE_HS","RechitHE vs Depth for Dz<0.1",1000,0,8,1000,0,7.5);
    h_depth_RecHE_PU = fs->make<TH2D>("h_depth_RecHE_PU","RechitHE vs Depth for Dz>0.1",1000,0,8,1000,0,7.5);
+
+   double arrayBins[1000] = {};
+   for(int i(0);i<100;i++){arrayBins[i] = 0.02*i;}
+   for(int i(100);i<600;i++){arrayBins[i] = 0.004*i+1.6;}
+   for(int i(600);i<1000;i++){arrayBins[i] = 0.006*i+0.4;}
+
 
    h_PFRecHEdepth1 = fs->make<TH1D>("h_PFRecHEdepth1","PFRechit depth == 1",500,0,10);
    h_PFRecHEdepth2 = fs->make<TH1D>("h_PFRecHEdepth2","PFRechit depth == 2",500,0,10);
@@ -326,21 +343,21 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    h_PFRecHEdepth6 = fs->make<TH1D>("h_PFRecHEdepth6","PFRechit depth == 6",500,0,10);
    h_PFRecHEdepth7 = fs->make<TH1D>("h_PFRecHEdepth7","PFRechit depth == 7",500,0,10);
 
-   h_PFRecHEdepth1_HS = fs->make<TH1D>("h_PFRecHEdepth1_HS","PFRechit depth == 1 Hard Scatter",500,0,10);
-   h_PFRecHEdepth2_HS = fs->make<TH1D>("h_PFRecHEdepth2_HS","PFRechit depth == 2 Hard Scatter",500,0,10);
-   h_PFRecHEdepth3_HS = fs->make<TH1D>("h_PFRecHEdepth3_HS","PFRechit depth == 3 Hard Scatter",500,0,10);
-   h_PFRecHEdepth4_HS = fs->make<TH1D>("h_PFRecHEdepth4_HS","PFRechit depth == 4 Hard Scatter",500,0,10);
-   h_PFRecHEdepth5_HS = fs->make<TH1D>("h_PFRecHEdepth5_HS","PFRechit depth == 5 Hard Scatter",500,0,10);
-   h_PFRecHEdepth6_HS = fs->make<TH1D>("h_PFRecHEdepth6_HS","PFRechit depth == 6 Hard Scatter",500,0,10);
-   h_PFRecHEdepth7_HS = fs->make<TH1D>("h_PFRecHEdepth7_HS","PFRechit depth == 7 Hard Scatter",500,0,10);
+   h_PFRecHEdepth1_HS = fs->make<TH1D>("h_PFRecHEdepth1_HS","PFRechit depth == 1 Hard Scatter",999,arrayBins);
+   h_PFRecHEdepth2_HS = fs->make<TH1D>("h_PFRecHEdepth2_HS","PFRechit depth == 2 Hard Scatter",999,arrayBins);
+   h_PFRecHEdepth3_HS = fs->make<TH1D>("h_PFRecHEdepth3_HS","PFRechit depth == 3 Hard Scatter",999,arrayBins);
+   h_PFRecHEdepth4_HS = fs->make<TH1D>("h_PFRecHEdepth4_HS","PFRechit depth == 4 Hard Scatter",999,arrayBins);
+   h_PFRecHEdepth5_HS = fs->make<TH1D>("h_PFRecHEdepth5_HS","PFRechit depth == 5 Hard Scatter",999,arrayBins);
+   h_PFRecHEdepth6_HS = fs->make<TH1D>("h_PFRecHEdepth6_HS","PFRechit depth == 6 Hard Scatter",999,arrayBins);
+   h_PFRecHEdepth7_HS = fs->make<TH1D>("h_PFRecHEdepth7_HS","PFRechit depth == 7 Hard Scatter",999,arrayBins);
 
-   h_PFRecHEdepth1_PU = fs->make<TH1D>("h_PFRecHEdepth1_PU","PFRechit depth == 1 Pileup",500,0,10);
-   h_PFRecHEdepth2_PU = fs->make<TH1D>("h_PFRecHEdepth2_PU","PFRechit depth == 2 Pileup",500,0,10);
-   h_PFRecHEdepth3_PU = fs->make<TH1D>("h_PFRecHEdepth3_PU","PFRechit depth == 3 Pileup",500,0,10);
-   h_PFRecHEdepth4_PU = fs->make<TH1D>("h_PFRecHEdepth4_PU","PFRechit depth == 4 Pileup",500,0,10);
-   h_PFRecHEdepth5_PU = fs->make<TH1D>("h_PFRecHEdepth5_PU","PFRechit depth == 5 Pileup",500,0,10);
-   h_PFRecHEdepth6_PU = fs->make<TH1D>("h_PFRecHEdepth6_PU","PFRechit depth == 6 Pileup",500,0,10);
-   h_PFRecHEdepth7_PU = fs->make<TH1D>("h_PFRecHEdepth7_PU","PFRechit depth == 7 Pileup",500,0,10);
+   h_PFRecHEdepth1_PU = fs->make<TH1D>("h_PFRecHEdepth1_PU","PFRechit depth == 1 Pileup",999,arrayBins);
+   h_PFRecHEdepth2_PU = fs->make<TH1D>("h_PFRecHEdepth2_PU","PFRechit depth == 2 Pileup",999,arrayBins);
+   h_PFRecHEdepth3_PU = fs->make<TH1D>("h_PFRecHEdepth3_PU","PFRechit depth == 3 Pileup",999,arrayBins);
+   h_PFRecHEdepth4_PU = fs->make<TH1D>("h_PFRecHEdepth4_PU","PFRechit depth == 4 Pileup",999,arrayBins);
+   h_PFRecHEdepth5_PU = fs->make<TH1D>("h_PFRecHEdepth5_PU","PFRechit depth == 5 Pileup",999,arrayBins);
+   h_PFRecHEdepth6_PU = fs->make<TH1D>("h_PFRecHEdepth6_PU","PFRechit depth == 6 Pileup",999,arrayBins);
+   h_PFRecHEdepth7_PU = fs->make<TH1D>("h_PFRecHEdepth7_PU","PFRechit depth == 7 Pileup",999,arrayBins);
 
 }
 
@@ -392,17 +409,26 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    //================ PFRecHits from PFCandidates->PFBlocks->PFClusters->PFRecHitFractions =============================================
    edm::Handle<reco::PFCandidateCollection> pfCandidate;
    event.getByToken(inputTagPFCandidates_, pfCandidate);
-
+   std::ofstream myfile;//to get the result of the big file and make ntuples
+   myfile.open("tuple.txt");//to get the result of the big file and make ntuples
    double PFRecHit = 0;
+   double PFRecSum = 0;
+   double PFRecSum_HS = 0;
+   double PFRecSum_PU = 0;
    double posX,posY,posZ = 0;
+   double PFRecSum_T20 = 0;
+   double PFRecSum_T24 = 0;
+   double PFRecSum_T26 = 0;
+   double PFRecSumEt_T20 = 0;
+   double PFRecSumEt_T24 = 0;
+   double PFRecSumEt_T26 = 0;
    for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop
      const reco::PFCandidate& pfc = *ci;
      if ( pfc.particleId() != 1 ) continue;// Charged Hadron Particles
      math::XYZPoint vtx = pfc.vertex();//PFCandidate Vertices
-     double dz = vtx.z()-leadPV.z();//Cut on Hard Scatter and Pileup
-     h_CHPVMPF->Fill(dz);
      const reco::PFCandidate::ElementsInBlocks& pfBlocks = ci->elementsInBlocks();//PFBlocks pointer from elements in the block
-     for ( reco::PFCandidate::ElementsInBlocks::const_iterator pfBlock = pfBlocks.begin(); pfBlock != pfBlocks.end(); ++pfBlock ) {//PFBlock Loop
+     //for ( reco::PFCandidate::ElementsInBlocks::const_iterator pfBlock = pfBlocks.begin(); pfBlock != pfBlocks.end(); ++pfBlock ) {//PFBlock Loop
+     for ( reco::PFCandidate::ElementsInBlocks::const_iterator pfBlock = pfBlocks.begin(); pfBlock <pfBlocks.begin()+1; ++pfBlock ) {//PFBlock Loop just one block
        const edm::OwnVector<reco::PFBlockElement>& pfBlockElements = pfBlock->first->elements();//Pick elements (PFClusters, PFTracks, Global muons) from PFBlocks
        for ( edm::OwnVector<reco::PFBlockElement>::const_iterator pfBlockElement = pfBlockElements.begin(); pfBlockElement != pfBlockElements.end(); ++pfBlockElement ) {//PFBlock Elements Loop
          if ( pfBlockElement->clusterRef().isNonnull() ) {//Pick PFClusters
@@ -416,16 +442,20 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
                posZ = pfRecHits->position().z();
                math::XYZPoint pflowPos(posX,posY,posZ);
                double Eta    = pflowPos.eta();
+	       double Phi    = pflowPos.phi();
 	       if(1.3<fabs(Eta) && fabs(Eta)<=2.5){//Tracker Area
+		 double dz = vtx.z()-leadPV.z();//Cut on Hard Scatter and Pileup
+		 h_CHPVMPF->Fill(dz);
 	         unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
                  //unsigned int depth1 = pfCluster->depth();//gives 5 depths from: depth = 0 to depth = 5(?)
                  PFRecHit = pfRecHits->energy()/cosh(Eta); 
+		 PFRecSum += pfRecHits->energy()/cosh(Eta);
                  h_depth_RecHE->Fill(depth,PFRecHit);
                  h_depth_RecHE->SetMarkerStyle(3);
                  h_depth_RecHE->SetMarkerSize(1.5);
                  h_depth_RecHE->GetXaxis()->SetTitle("depth");
                  h_depth_RecHE->GetYaxis()->SetTitle("PFRecHit[depth] (GeV)");
-
+		 h_PFRecSum->Fill(PFRecSum);
                  if(depth == 1){h_PFRecHEdepth1->Fill(PFRecHit);}
                  if(depth == 2){h_PFRecHEdepth2->Fill(PFRecHit);}
                  if(depth == 3){h_PFRecHEdepth3->Fill(PFRecHit);}
@@ -433,9 +463,39 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
                  if(depth == 5){h_PFRecHEdepth5->Fill(PFRecHit);}
                  if(depth == 6){h_PFRecHEdepth6->Fill(PFRecHit);}
                  if(depth == 7){h_PFRecHEdepth7->Fill(PFRecHit);}
+		 if(1.653<=fabs(Eta) && fabs(Eta)<=1.740){//tower = 20
+		   PFRecSumEt_T20 += pfRecHits->energy()/cosh(Eta); 
+		   PFRecSum_T20 +=pfRecHits->energy();
+		 }
+                 if(2.043<=fabs(Eta) && fabs(Eta)<=2.172){// tower = 24
+		   PFRecSumEt_T24 += pfRecHits->energy()/cosh(Eta); 
+		   PFRecSum_T24 +=pfRecHits->energy();
+		 }
+                 if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//tower = 26
+		   PFRecSumEt_T26 += pfRecHits->energy()/cosh(Eta); 
+		   PFRecSum_T26 +=pfRecHits->energy();
+		 }
 
-       	         if(fabs(dz)<0.1){//Hard Scatter
+                 //myfile<<100<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<PFRecSum<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSum_T20<<" "<<PFRecSum_T24<<" "<<PFRecSum_T26<<" "<<PFRecSumEt_T20<<" "<<PFRecSumEt_T24<<" "<<PFRecSumEt_T26<<std::endl;
+
+       	         if(fabs(dz)<=0.1){//Hard Scatter
+		   PFRecSum_HS += pfRecHits->energy()/cosh(Eta);
+                   if(1.653<=fabs(Eta) && fabs(Eta)<=1.740){//tower = 20
+                     PFRecSumEt_T20 += pfRecHits->energy()/cosh(Eta);
+                     PFRecSum_T20 +=pfRecHits->energy();
+                   }
+                   if(2.043<=fabs(Eta) && fabs(Eta)<=2.172){// tower = 24
+                     PFRecSumEt_T24 += pfRecHits->energy()/cosh(Eta);
+                     PFRecSum_T24 +=pfRecHits->energy();
+                   }
+                   if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//tower = 26
+                     PFRecSumEt_T26 += pfRecHits->energy()/cosh(Eta);
+                     PFRecSum_T26 +=pfRecHits->energy();
+                   }
+
+		   //myfile<<1<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<PFRecSum_HS<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSum_T20<<" "<<PFRecSum_T24<<" "<<PFRecSum_T26<<" "<<PFRecSumEt_T20<<" "<<PFRecSumEt_T24<<" "<<PFRecSumEt_T26<<std::endl;
 	           h_CHPVMPF_HS->Fill(dz);
+		   h_PFRecSum_HS->Fill(PFRecSum_HS);
                    h_depth_RecHE_HS->Fill(depth,PFRecHit);
                    h_depth_RecHE_HS->SetMarkerStyle(3);
                    h_depth_RecHE_HS->SetMarkerColor(2);
@@ -450,10 +510,26 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
                    if(depth == 5){h_PFRecHEdepth5_HS->Fill(PFRecHit);}
                    if(depth == 6){h_PFRecHEdepth6_HS->Fill(PFRecHit);}
                    if(depth == 7){h_PFRecHEdepth7_HS->Fill(PFRecHit);}
-
+		   //myfile<<1<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSumEt_T26<"  "<<PFRecSum_T26<<"  "<<
 	         }
                  if(fabs(dz)>0.1){//Pileup
+		   PFRecSum_PU += pfRecHits->energy()/cosh(Eta);
+                   if(1.653<=fabs(Eta) && fabs(Eta)<=1.740){//tower = 20
+                     PFRecSumEt_T20 += pfRecHits->energy()/cosh(Eta);
+                     PFRecSum_T20 +=pfRecHits->energy();
+                   }
+                   if(2.043<=fabs(Eta) && fabs(Eta)<=2.172){// tower = 24
+                     PFRecSumEt_T24 += pfRecHits->energy()/cosh(Eta);
+                     PFRecSum_T24 +=pfRecHits->energy();
+                   }
+                   if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//tower = 26
+                     PFRecSumEt_T26 += pfRecHits->energy()/cosh(Eta);
+                     PFRecSum_T26 +=pfRecHits->energy();
+                   }
+
+                   myfile<<0<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<PFRecSum_PU<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSum_T20<<" "<<PFRecSum_T24<<" "<<PFRecSum_T26<<" "<<PFRecSumEt_T20<<" "<<PFRecSumEt_T24<<" "<<PFRecSumEt_T26<<std::endl;
                    h_CHPVMPF_PU->Fill(dz);
+		   h_PFRecSum_PU->Fill(PFRecSum_PU);
                    h_depth_RecHE_PU->Fill(depth,PFRecHit);
                    h_depth_RecHE_PU->SetMarkerStyle(3);
                    h_depth_RecHE_PU->SetMarkerColor(4);
@@ -477,6 +553,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
        }  //Loop over PFBlockElements
      }  //Loop over PFBlock
    }  //Loop over PFCandidate
+   myfile.close();
    edm::ESHandle<HcalTrigTowerGeometry> tpd_geo_h;
    setup.get<CaloGeometryRecord>().get(tpd_geo_h);
    edm::ESHandle<HcalDbService> conditions;
