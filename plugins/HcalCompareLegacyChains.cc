@@ -407,35 +407,49 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    }
 
    //================ PFRecHits from PFCandidates->PFBlocks->PFClusters->PFRecHitFractions =============================================
+   //Process:	1-Loop over all Charged Hadrons PFCandidates. const_iterator ci later pointed to pfc
+   //		2-Return elements in blocks by calling the function elementsInBlocks() from the vector ElementsInBlocks. Vector ElementsInBlocks is defined from the pair ElementInBlock. These all are defined in PFCandidate.h (https://github.com/cms-sw/cmssw/blob/CMSSW_10_1_X/DataFormats/ParticleFlowCandidate/interface/PFCandidate.h#L386-L387)
+   //		3-Loop on the elements in block associated to the PFCandidate
+   //		4-Loop on the first element of ElementInBlock pair: "blockRef" that contains TRACK, PS1, PS2, ECAL, HCAL, GSF, BREM, SC HO (https://github.com/cms-sw/cmssw/blob/CMSSW_10_1_X/DataFormats/ParticleFlowReco/interface/PFBlockElement.h#L33-L48). Type number represents element ID such as TRACK, PS1, PS2 ...
+   //		5-Extract the PFCluster from blockelements components
+   //		6-Loop over Hits within the PFCluster
+   double PFSEt_T26 = 0;
+   double PFSEt_T26_D1 = 0;
+   double PFSEt_T26_D2 = 0;
+   double PFSEt_T26_D3 = 0;
+   double PFSEt_T26_D4 = 0;
+   double PFSEt_T26_D5 = 0;
+   double PFSEt_T26_D6 = 0;
+   double PFSEt_T26_D7 = 0;
+   unsigned int iphi = 0;
    edm::Handle<reco::PFCandidateCollection> pfCandidate;
    event.getByToken(inputTagPFCandidates_, pfCandidate);
    std::ofstream myfile;//to get the result of the big file and make ntuples
-   myfile.open("tuple.txt");//to get the result of the big file and make ntuples
-   double PFRecHit = 0;
-   double PFRecSum = 0;
-   double PFRecSum_HS = 0;
-   double PFRecSum_PU = 0;
-   double posX,posY,posZ = 0;
-   double PFRecSum_T20 = 0;
-   double PFRecSum_T24 = 0;
-   double PFRecSum_T26 = 0;
-   double PFRecSumEt_T20 = 0;
-   double PFRecSumEt_T24 = 0;
-   double PFRecSumEt_T26 = 0;
-   for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop
-     const reco::PFCandidate& pfc = *ci;
-     if ( pfc.particleId() != 1 ) continue;// Charged Hadron Particles
-     math::XYZPoint vtx = pfc.vertex();//PFCandidate Vertices
-     const reco::PFCandidate::ElementsInBlocks& pfBlocks = ci->elementsInBlocks();//PFBlocks pointer from elements in the block
-     //for ( reco::PFCandidate::ElementsInBlocks::const_iterator pfBlock = pfBlocks.begin(); pfBlock != pfBlocks.end(); ++pfBlock ) {//PFBlock Loop
-     for ( reco::PFCandidate::ElementsInBlocks::const_iterator pfBlock = pfBlocks.begin(); pfBlock <pfBlocks.begin()+1; ++pfBlock ) {//PFBlock Loop just one block
-       const edm::OwnVector<reco::PFBlockElement>& pfBlockElements = pfBlock->first->elements();//Pick elements (PFClusters, PFTracks, Global muons) from PFBlocks
-       for ( edm::OwnVector<reco::PFBlockElement>::const_iterator pfBlockElement = pfBlockElements.begin(); pfBlockElement != pfBlockElements.end(); ++pfBlockElement ) {//PFBlock Elements Loop
-         if ( pfBlockElement->clusterRef().isNonnull() ) {//Pick PFClusters
-           reco::PFClusterRef pfCluster = pfBlockElement->clusterRef();
-	   if (pfCluster->layer() == PFLayer::HCAL_ENDCAP){//HCAL ENDCAP
+   myfile.open("tuple.txt");//write the results in a text file
+   double posX,posY,posZ = 0;//Geometry Info.
+   for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop (1)
+     const reco::PFCandidate& pfc = *ci;//(1)
+     if ( pfc.particleId() != 1 ) continue;// Charged Hadron Particles (1)
+     math::XYZPoint vtx = pfc.vertex();//PFCandidate Vertices  
+     double dz = fabs(vtx.z()-leadPV.z());//Cut on Hard Scatter and Pileup
+     h_CHPVMPF->Fill(dz);
+     const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();//returns elements in the block associated with the PFCandidate (2)
+     for ( reco::PFCandidate::ElementsInBlocks::const_iterator Elements = theElements.begin(); Elements != theElements.end(); ++Elements ) {//Elements in block associated with PFCandidate (3)
+       //=== to cout the elements in the block:(https://github.com/cms-sw/cmssw/blob/CMSSW_10_1_X/RecoParticleFlow/Configuration/test/PFChargedHadronAnalyzer.cc#L188-L193) =========
+       const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();
+       const reco::PFBlockRef blockRef = theElements[0].first;// blockRef is the first object of the ElementInBlock pair (4)
+       const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+       for(unsigned iEle=0; iEle<elements.size(); iEle++) {//to give type of elements in blockRef: Track, PS1, PS2 ...
+         std::cout<<"PFElementsInBlocks are: "<<elements[iEle].type()<<std::endl;
+       }
+       //================================================
+       const edm::OwnVector<reco::PFBlockElement>& PFBlockRef = Elements->first->elements();
+       for ( edm::OwnVector<reco::PFBlockElement>::const_iterator blockComponent = PFBlockRef.begin(); blockComponent != PFBlockRef.end(); ++blockComponent ) {//Loop over block components such as Track, PS1, PS2 ... (4)
+         if ( blockComponent->clusterRef().isNonnull() ) {//If clusters refenced to pfBlockelement is valid
+           reco::PFClusterRef pfCluster = blockComponent->clusterRef();//get PFCluster from ECAL, HCAL, HO, HFEM, HFHAD (5)
+   	   if (pfCluster->layer() == PFLayer::HCAL_ENDCAP){//HCAL ENDCAP
              const std::vector<reco::PFRecHitFraction>& pfRecHitFractions = pfCluster->recHitFractions();
-             for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop
+             for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop (6)
                const reco::PFRecHitRef& pfRecHits = it->recHitRef();
                posX = pfRecHits->position().x();
                posY = pfRecHits->position().y();
@@ -443,113 +457,27 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
                math::XYZPoint pflowPos(posX,posY,posZ);
                double Eta    = pflowPos.eta();
 	       double Phi    = pflowPos.phi();
-	       if(1.3<fabs(Eta) && fabs(Eta)<=2.5){//Tracker Area
-		 double dz = vtx.z()-leadPV.z();//Cut on Hard Scatter and Pileup
-		 h_CHPVMPF->Fill(dz);
+	       if(Phi>=0){iphi = Phi*180/5/M_PI;}
+	       else{iphi = 72 + Phi*180/5/M_PI;}
+	       std::cout<<"Phi is: "<<Phi<<" iphi is: "<<iphi<<std::endl;
+	       //if(1.3<fabs(Eta) && fabs(Eta)<=2.5){//Tracker Area
+	       if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//ieta == 26
+		 PFSEt_T26 +=pfRecHits->energy()/cosh(Eta); 
 	         unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
-                 //unsigned int depth1 = pfCluster->depth();//gives 5 depths from: depth = 0 to depth = 5(?)
-                 PFRecHit = pfRecHits->energy()/cosh(Eta); 
-		 PFRecSum += pfRecHits->energy()/cosh(Eta);
-                 h_depth_RecHE->Fill(depth,PFRecHit);
-                 h_depth_RecHE->SetMarkerStyle(3);
-                 h_depth_RecHE->SetMarkerSize(1.5);
-                 h_depth_RecHE->GetXaxis()->SetTitle("depth");
-                 h_depth_RecHE->GetYaxis()->SetTitle("PFRecHit[depth] (GeV)");
-		 h_PFRecSum->Fill(PFRecSum);
-                 if(depth == 1){h_PFRecHEdepth1->Fill(PFRecHit);}
-                 if(depth == 2){h_PFRecHEdepth2->Fill(PFRecHit);}
-                 if(depth == 3){h_PFRecHEdepth3->Fill(PFRecHit);}
-                 if(depth == 4){h_PFRecHEdepth4->Fill(PFRecHit);}
-                 if(depth == 5){h_PFRecHEdepth5->Fill(PFRecHit);}
-                 if(depth == 6){h_PFRecHEdepth6->Fill(PFRecHit);}
-                 if(depth == 7){h_PFRecHEdepth7->Fill(PFRecHit);}
-		 if(1.653<=fabs(Eta) && fabs(Eta)<=1.740){//tower = 20
-		   PFRecSumEt_T20 += pfRecHits->energy()/cosh(Eta); 
-		   PFRecSum_T20 +=pfRecHits->energy();
-		 }
-                 if(2.043<=fabs(Eta) && fabs(Eta)<=2.172){// tower = 24
-		   PFRecSumEt_T24 += pfRecHits->energy()/cosh(Eta); 
-		   PFRecSum_T24 +=pfRecHits->energy();
-		 }
-                 if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//tower = 26
-		   PFRecSumEt_T26 += pfRecHits->energy()/cosh(Eta); 
-		   PFRecSum_T26 +=pfRecHits->energy();
-		 }
+                 if(depth == 1){PFSEt_T26_D1 += pfRecHits->energy()/cosh(Eta);}
+                 if(depth == 2){PFSEt_T26_D2 += pfRecHits->energy()/cosh(Eta);}
+                 if(depth == 3){PFSEt_T26_D3 += pfRecHits->energy()/cosh(Eta);}
+                 if(depth == 4){PFSEt_T26_D4 += pfRecHits->energy()/cosh(Eta);}
+                 if(depth == 5){PFSEt_T26_D5 += pfRecHits->energy()/cosh(Eta);}
+                 if(depth == 6){PFSEt_T26_D6 += pfRecHits->energy()/cosh(Eta);}
+                 if(depth == 7){PFSEt_T26_D7 += pfRecHits->energy()/cosh(Eta);}
 
-                 //myfile<<100<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<PFRecSum<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSum_T20<<" "<<PFRecSum_T24<<" "<<PFRecSum_T26<<" "<<PFRecSumEt_T20<<" "<<PFRecSumEt_T24<<" "<<PFRecSumEt_T26<<std::endl;
-
-       	         if(fabs(dz)<=0.1){//Hard Scatter
-		   PFRecSum_HS += pfRecHits->energy()/cosh(Eta);
-                   if(1.653<=fabs(Eta) && fabs(Eta)<=1.740){//tower = 20
-                     PFRecSumEt_T20 += pfRecHits->energy()/cosh(Eta);
-                     PFRecSum_T20 +=pfRecHits->energy();
-                   }
-                   if(2.043<=fabs(Eta) && fabs(Eta)<=2.172){// tower = 24
-                     PFRecSumEt_T24 += pfRecHits->energy()/cosh(Eta);
-                     PFRecSum_T24 +=pfRecHits->energy();
-                   }
-                   if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//tower = 26
-                     PFRecSumEt_T26 += pfRecHits->energy()/cosh(Eta);
-                     PFRecSum_T26 +=pfRecHits->energy();
-                   }
-
-		   //myfile<<1<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<PFRecSum_HS<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSum_T20<<" "<<PFRecSum_T24<<" "<<PFRecSum_T26<<" "<<PFRecSumEt_T20<<" "<<PFRecSumEt_T24<<" "<<PFRecSumEt_T26<<std::endl;
-	           h_CHPVMPF_HS->Fill(dz);
-		   h_PFRecSum_HS->Fill(PFRecSum_HS);
-                   h_depth_RecHE_HS->Fill(depth,PFRecHit);
-                   h_depth_RecHE_HS->SetMarkerStyle(3);
-                   h_depth_RecHE_HS->SetMarkerColor(2);
-                   h_depth_RecHE_HS->SetMarkerSize(1.5);
-                   h_depth_RecHE_HS->GetXaxis()->SetTitle("depth");
-                   h_depth_RecHE_HS->GetYaxis()->SetTitle("PFRecHit (GeV)");
-
-                   if(depth == 1){h_PFRecHEdepth1_HS->Fill(PFRecHit);}
-                   if(depth == 2){h_PFRecHEdepth2_HS->Fill(PFRecHit);}
-                   if(depth == 3){h_PFRecHEdepth3_HS->Fill(PFRecHit);}
-                   if(depth == 4){h_PFRecHEdepth4_HS->Fill(PFRecHit);}
-                   if(depth == 5){h_PFRecHEdepth5_HS->Fill(PFRecHit);}
-                   if(depth == 6){h_PFRecHEdepth6_HS->Fill(PFRecHit);}
-                   if(depth == 7){h_PFRecHEdepth7_HS->Fill(PFRecHit);}
-		   //myfile<<1<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSumEt_T26<"  "<<PFRecSum_T26<<"  "<<
-	         }
-                 if(fabs(dz)>0.1){//Pileup
-		   PFRecSum_PU += pfRecHits->energy()/cosh(Eta);
-                   if(1.653<=fabs(Eta) && fabs(Eta)<=1.740){//tower = 20
-                     PFRecSumEt_T20 += pfRecHits->energy()/cosh(Eta);
-                     PFRecSum_T20 +=pfRecHits->energy();
-                   }
-                   if(2.043<=fabs(Eta) && fabs(Eta)<=2.172){// tower = 24
-                     PFRecSumEt_T24 += pfRecHits->energy()/cosh(Eta);
-                     PFRecSum_T24 +=pfRecHits->energy();
-                   }
-                   if(2.322<=fabs(Eta) && fabs(Eta)<=2.500){//tower = 26
-                     PFRecSumEt_T26 += pfRecHits->energy()/cosh(Eta);
-                     PFRecSum_T26 +=pfRecHits->energy();
-                   }
-
-                   myfile<<0<<" "<<pfRecHits->energy()<<" "<<pfRecHits->energy()/cosh(Eta)<<" "<<PFRecSum_PU<<" "<<Eta<<" "<<Phi<<" "<<pfRecHits->depth()<<" "<<PFRecSum_T20<<" "<<PFRecSum_T24<<" "<<PFRecSum_T26<<" "<<PFRecSumEt_T20<<" "<<PFRecSumEt_T24<<" "<<PFRecSumEt_T26<<std::endl;
-                   h_CHPVMPF_PU->Fill(dz);
-		   h_PFRecSum_PU->Fill(PFRecSum_PU);
-                   h_depth_RecHE_PU->Fill(depth,PFRecHit);
-                   h_depth_RecHE_PU->SetMarkerStyle(3);
-                   h_depth_RecHE_PU->SetMarkerColor(4);
-                   h_depth_RecHE_PU->SetMarkerSize(1.5);
-                   h_depth_RecHE_PU->GetXaxis()->SetTitle("depth");
-                   h_depth_RecHE_PU->GetYaxis()->SetTitle("PFRecHit (GeV)");
-
-                   if(depth == 1){h_PFRecHEdepth1_PU->Fill(PFRecHit);}
-                   if(depth == 2){h_PFRecHEdepth2_PU->Fill(PFRecHit);}
-                   if(depth == 3){h_PFRecHEdepth3_PU->Fill(PFRecHit);}
-                   if(depth == 4){h_PFRecHEdepth4_PU->Fill(PFRecHit);}
-                   if(depth == 5){h_PFRecHEdepth5_PU->Fill(PFRecHit);}
-                   if(depth == 6){h_PFRecHEdepth6_PU->Fill(PFRecHit);}
-                   if(depth == 7){h_PFRecHEdepth7_PU->Fill(PFRecHit);}
-
-                 }
-	       }//Tracker area 
+	       }//tower 26
              }//End loop over PFCluster
            }//Restrict HCAL ENDCAP
-         }
+           if(fabs(dz)<0.1){myfile<<0<<" "<<PFSEt_T26<<" "<<PFSEt_T26_D1<<" "<<PFSEt_T26_D2<<" "<<PFSEt_T26_D3<<" "<<PFSEt_T26_D4<<" "<<PFSEt_T26_D5<<" "<<PFSEt_T26_D6<<" "<<PFSEt_T26_D7<<std::endl;}//HS
+	   else{myfile<<1<<" "<<PFSEt_T26<<" "<<PFSEt_T26_D1<<" "<<PFSEt_T26_D2<<" "<<PFSEt_T26_D3<<" "<<PFSEt_T26_D4<<" "<<PFSEt_T26_D5<<" "<<PFSEt_T26_D6<<" "<<PFSEt_T26_D7<<std::endl;}//PU
+         }//Pick PFClusters
        }  //Loop over PFBlockElements
      }  //Loop over PFBlock
    }  //Loop over PFCandidate
