@@ -155,7 +155,7 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       TH1D *h_CHPVMPF_HS;
       TH1D *h_CHPVMPF_PU;
       TH1D *h_CHPVMPF;
-      TH1D *h_PFRecHEdepth1;
+      /*TH1D *h_PFRecHEdepth1;
       TH1D *h_PFRecHEdepth2;
       TH1D *h_PFRecHEdepth3;
       TH1D *h_PFRecHEdepth4;
@@ -184,12 +184,17 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
 
       TH1D *h_PFRec_Et_D1;
       TH1D *h_PFRec_Et_D2;
-      TH1D *h_PFRec_Et_D3;
+      TH1D *h_PFRec_Et_D3;*/
+
+      TH1D *h_RecMET;
+      TH1D *h_L1SumEt;
+      TH1D *h_L1MET;
+      TH1D *h_PFMET;
 
       //====== 2D Histo Declaration =========
-      TH2D *h_depth_RecHE;
+      /*TH2D *h_depth_RecHE;
       TH2D *h_depth_RecHE_HS;
-      TH2D *h_depth_RecHE_PU;
+      TH2D *h_depth_RecHE_PU;*/
 
       TTree *tps_;
       TTree *tpsplit_;
@@ -323,8 +328,11 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    h_CHPVMPF_PU = fs->make<TH1D>("h_CHPVMPF_PU" ,"Charged Hadrons PFCandidate Vertex Z Position", 500,-15,15);
    h_CHPVMPF = fs->make<TH1D>("h_CHPVMPF","Charged Hadrons Vertex Minus PFCandidate Z Position",500,-15,15);
 
+   //====SumEt=================================================================================
+   h_L1SumEt = fs->make<TH1D>("L1SumEt","L1SumEt",100,-10,2500);
+
    //====MET 2D Histograms=================================================================================
-   h_PFRecSum = fs->make<TH1D>("h_PFRecSum","PFRecHit Sum in HE", 100,0,700);
+   /*h_PFRecSum = fs->make<TH1D>("h_PFRecSum","PFRecHit Sum in HE", 100,0,700);
    h_PFRecSum_HS = fs->make<TH1D>("h_PFRecSum_HS","PFRecHit Sum in HE for HS", 100,0,700);
    h_PFRecSum_PU = fs->make<TH1D>("h_PFRecSum_PU","PFRecHit Sum in HE for PU", 100,0,700);
 
@@ -366,7 +374,10 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
 
    h_PFRec_Et_D1 = fs->make<TH1D>("h_PFRec_Et_D1","",500,0,2000);
    h_PFRec_Et_D2 = fs->make<TH1D>("h_PFRec_Et_D2","",500,0,2000);
-   h_PFRec_Et_D3 = fs->make<TH1D>("h_PFRec_Et_D3","",500,0,2000);
+   h_PFRec_Et_D3 = fs->make<TH1D>("h_PFRec_Et_D3","",500,0,2000);*/
+   h_RecMET = fs->make<TH1D>("h_RecMET","",500,0,300);
+   h_L1MET = fs->make<TH1D>("h_L1MET","",500,0,300);
+   h_PFMET = fs->make<TH1D>("h_PFMET","",500,0,300);
 
 }
 
@@ -406,6 +417,26 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    met_data->met     = theMet.et();
    met_data->metPhi  = theMet.phi();
    met_data->sumEt   = theMet.sumEt();
+   h_PFMET->Fill(theMet.et());
+
+   //============Online MET =====================================================================
+   double L1MET = 0;
+   //double L1SumEt = 0;
+   edm::Handle<l1t::EtSumBxCollection> sums;
+   event.getByToken(sumToken_, sums);
+   if(sums.isValid()){
+     for (int ibx = sums->getFirstBX(); ibx <= sums->getLastBX(); ++ibx) {
+       for (l1t::EtSumBxCollection::const_iterator it=sums->begin(ibx); it!=sums->end(ibx); it++) {
+         int type = static_cast<int>( it->getType() );
+         if (type == 8 && ibx ==0){L1MET = it->et(); h_L1MET->Fill(L1MET);}
+         //if (type == 2 && ibx ==0){double L1MET_HBE = it->et();}
+         if (type == 0 && ibx ==0){h_L1SumEt->Fill(it->et());
+	   //L1SumEt = it->et();
+	 }
+       }
+     }
+   }
+   else{std::cout<<" invalid sums"<<std::endl;}
 
    //================ Primary Vertex Position =============================================
    edm::Handle<reco::VertexCollection> PVs;
@@ -418,13 +449,22 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    double Eta = 0.0;
    double Phi = 0.0;
    unsigned int ieta = 0;
-   unsigned int iphi = 0;
+   //unsigned int iphi_ee = 0;
+   //unsigned int iphi_eb = 0;
+   //unsigned int iphi_hbhf = 0;
+   unsigned int iphi_he = 0;
    unsigned int f = 0;
    unsigned int g = 0;
    unsigned int n = 0;
    std::vector<unsigned int> Geometry;
    std::vector<double> PFRecHit;
    std::vector<double> etaphi;
+
+   //double PFRecHBHF, PFRecEE, PFRecEB = 0;
+   //double PFRecHE_Ex, PFRecHBHF_Ex, PFRecEB_Ex, PFRecEE_Ex = 0;
+  // double PFRecHE_Ey, PFRecHBHF_Ey, PFRecEB_Ey, PFRecEE_Ey = 0;
+   //double PFRec_Ex, PFRec_Ey = 0;
+
 
    //================ PFRecHits from PFCandidates->PFBlocks->PFClusters->PFRecHitFractions =============================================
    //Process:	1-Loop over all Charged Hadrons PFCandidates. const_iterator ci later pointed to pfc
@@ -438,7 +478,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    edm::Handle<reco::PFCandidateCollection> pfCandidate;
    event.getByToken(inputTagPFCandidates_, pfCandidate);
    std::ofstream file;//to get the result of the big file and make ntuples
-   file.open("ZeroBias1.txt");
+   file.open("jetht1_9.txt");
+   std::ofstream totxt;//to get the result of the big file and make ntuples
+   totxt.open("jetht2_9.txt");
    double posX,posY,posZ = 0;//Geometry Info.
    //double PFRec[11][72][7] = {};
    for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop (1)
@@ -452,11 +494,12 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
      else{h_CHPVMPF_PU->Fill(dz1);}
      const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();//returns elements in the block associated with the PFCandidate (2)
      double PFRec[11][72][7] = {};
+     //double PFRecHit = 0;
      //n = 0;
      for ( reco::PFCandidate::ElementsInBlocks::const_iterator Elements = theElements.begin(); Elements != theElements.end(); ++Elements ) {//Elements in block associated with PFCandidate (3)
        //=== to cout the elements in the block:(https://github.com/cms-sw/cmssw/blob/CMSSW_10_1_X/RecoParticleFlow/Configuration/test/PFChargedHadronAnalyzer.cc#L188-L193) =========
-       const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();
-       const reco::PFBlockRef blockRef = theElements[0].first;// blockRef is the first object of the ElementInBlock pair (4)
+       //const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();
+       //const reco::PFBlockRef blockRef = theElements[0].first;// blockRef is the first object of the ElementInBlock pair (4)
        /*const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
        for(unsigned iEle=0; iEle<elements.size(); iEle++) {//to check type of elements in blockRef: Track, PS1, PS2 ...
          std::cout<<"PFElementsInBlocks are: "<<elements[iEle].type()<<std::endl;
@@ -467,6 +510,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
          if ( blockComponent->clusterRef().isNull()) continue;//If clusters refenced to pfBlockelement is not empty
          reco::PFClusterRef pfCluster = blockComponent->clusterRef();//get PFCluster from ECAL, HCAL, HO, HFEM, HFHAD (5)
 	 if (pfCluster->layer() != PFLayer::HCAL_ENDCAP) continue;
+	 //if((pfCluster->layer() != PFLayer::HCAL_ENDCAP) || (pfCluster->layer() != PFLayer::HCAL_BARREL1) || (pfCluster->layer() != PFLayer::ECAL_BARREL) || (pfCluster->layer() != PFLayer::ECAL_ENDCAP) || (pfCluster->layer() == PFLayer::HF_HAD) || (pfCluster->layer() == PFLayer::HF_EM)) continue;
          const std::vector<reco::PFRecHitFraction>& pfRecHitFractions = pfCluster->recHitFractions();
 	 n = 0;
 
@@ -474,79 +518,97 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 	   bool repetetive = false;
 
            const reco::PFRecHitRef& pfRecHits = it->recHitRef();
-
-	   DetId idseed;//reference from: 	https://github.com/cms-sw/cmssw/blob/master/RecoParticleFlow/PFClusterTools/src/PFPhotonClusters.cc#L27
+           DetId idseed;//reference from:     https://github.com/cms-sw/cmssw/blob/master/RecoParticleFlow/PFClusterTools/src/PFPhotonClusters.cc#L27
            idseed = pfRecHits->detId();
-           HcalDetId HEidSeed = HcalDetId(idseed.rawId());
-           iphi = HEidSeed.iphi();
-
            posX = pfRecHits->position().x();
            posY = pfRecHits->position().y();
            posZ = pfRecHits->position().z();
            math::XYZPoint pflowPos(posX,posY,posZ);
-	   Eta    = pflowPos.eta();
-	   Phi    = pflowPos.phi();
+           Eta    = pflowPos.eta();
+           Phi    = pflowPos.phi();
+	   //if (pfCluster->layer() == PFLayer::HCAL_ENDCAP){
+             HcalDetId HEidSeed = HcalDetId(idseed.rawId());
+             iphi_he = HEidSeed.iphi();
+	     double PFRecHit_Et = pfRecHits->energy()/cosh(Eta);
+	     unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
+	       //ieta definition
+	     if(1.305<=Eta || Eta<=2.500){//Restricting the area between 1.305<=|Eta|<=2.500 tracker region
+	       if(2.322<=Eta && Eta<=2.500){ieta = 1;}//ieta == 26
+	       if(2.172<=Eta && Eta<=2.322){ieta = 2;}//ieta == 25
+	       if(2.043<=Eta && Eta<=2.172){ieta = 3;}//ieta == 24
+	       if(1.930<=Eta && Eta<=2.043){ieta = 4;}//ieta == 23
+	       if(1.830<=Eta && Eta<=1.930){ieta = 5;}//ieta == 22
+	       if(1.740<=Eta && Eta<=1.830){ieta = 6;}//ieta == 21
+	       if(1.653<=Eta && Eta<=1.740){ieta = 7;}//ieta == 20
+	       if(1.566<=Eta && Eta<=1.653){ieta = 8;}//ieta == 19
+	       if(1.479<=Eta && Eta<=1.566){ieta = 9;}//ieta == 18
+	       if(1.392<=Eta && Eta<=1.479){ieta = 10;}//ieta == 17
+	       if(1.305<=Eta && Eta<=1.392){ieta = 11;}//ieta == 16
 
-	   double PFRecHit_Et = pfRecHits->energy()/cosh(Eta);
-	   unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
-	     //ieta definition
-	   if(Eta<1.305 || 2.500<Eta) continue;//Restricting the area between 1.305<=|Eta|<=2.500 tracker region
-	   if(2.322<=Eta && Eta<=2.500){ieta = 1;}//ieta == 26
-	   if(2.172<=Eta && Eta<=2.322){ieta = 2;}//ieta == 25
-	   if(2.043<=Eta && Eta<=2.172){ieta = 3;}//ieta == 24
-	   if(1.930<=Eta && Eta<=2.043){ieta = 4;}//ieta == 23
-	   if(1.830<=Eta && Eta<=1.930){ieta = 5;}//ieta == 22
-	   if(1.740<=Eta && Eta<=1.830){ieta = 6;}//ieta == 21
-	   if(1.653<=Eta && Eta<=1.740){ieta = 7;}//ieta == 20
-	   if(1.566<=Eta && Eta<=1.653){ieta = 8;}//ieta == 19
-	   if(1.479<=Eta && Eta<=1.566){ieta = 9;}//ieta == 18
-	   if(1.392<=Eta && Eta<=1.479){ieta = 10;}//ieta == 17
-	   if(1.305<=Eta && Eta<=1.392){ieta = 11;}//ieta == 16
-
-	    //=== Conversion from PHI to IPHI =========
-	   /*if(Phi>=0){iphi = Phi*180/5/M_PI;}
-	   else{iphi = 72 + Phi*180/5/M_PI;}*/
-            //=========================================
-
-	   Geometry.push_back(iphi);//(3*n)th element is iphi
-           Geometry.push_back(ieta);//(3*n+1)th element is ieta
-           Geometry.push_back(depth);//(3*n+2)th element is depth
-           PFRecHit.push_back(pfRecHits->energy()/cosh(Eta));
-           etaphi.push_back(Eta);//the (2*n)th element is eta 
-           etaphi.push_back(Phi);//(2*n+1)th element is phi
-	    //if(ieta == 6){std::cout<<" eta: "<<Eta<<" depth: "<<depth<<std::endl;}
-           for(unsigned int i(0); i<n; i++){
-             if(iphi == Geometry[3*i] && ieta == Geometry[3*i+1] && depth == Geometry[3*i+2] && PFRecHit_Et == PFRecHit[i]){
-	       repetetive = true;
-	       f++;
-	     }
-	     if(repetetive == true) break;
-           }
-           if(repetetive == true) continue;
-           g++;
-           for(unsigned int i=1; i<12; i++){
-             for(unsigned int j=1; j<73; j++){
-	       for(unsigned int k=1; k<8; k++){
-	         if(ieta==i && iphi==j && depth==k){PFRec[i-1][j-1][k-1] += pfRecHits->energy()/cosh(Eta);}
-		   //std::cout<<PFRec[i-1][j-1][k-1]<<std::endl;}
+	       Geometry.push_back(iphi_he);//(3*n)th element is iphi
+               Geometry.push_back(ieta);//(3*n+1)th element is ieta
+               Geometry.push_back(depth);//(3*n+2)th element is depth
+               PFRecHit.push_back(pfRecHits->energy()/cosh(Eta));
+               etaphi.push_back(Eta);//the (2*n)th element is eta 
+               etaphi.push_back(Phi);//(2*n+1)th element is phi
+               for(unsigned int i(0); i<n; i++){
+                 if(iphi_he == Geometry[3*i] && ieta == Geometry[3*i+1] && depth == Geometry[3*i+2] && PFRecHit_Et == PFRecHit[i]){
+	           repetetive = true;
+	           f++;
+	         }
+	         if(repetetive == true) break;
+               }
+               if(repetetive == true) continue;
+               g++;
+               for(unsigned int i=1; i<12; i++){
+                 for(unsigned int j=1; j<73; j++){
+	           for(unsigned int k=1; k<8; k++){
+	             if(ieta==i && iphi_he==j && depth==k){PFRec[i-1][j-1][k-1] += pfRecHits->energy()/cosh(Eta);}
+	           }
+	         }	 
 	       }
-	     }	 
-	   }
-	   n++;
+	       n++;
+	       //PFRecHit +=pfRecHits->energy()/cosh(Eta);
+	      }
+//	     }else{//PFRecHE = pfRecHits->energy()/cosh(Eta);
+//	        PFRecHE_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
+//                PFRecHE_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);}
+//           }//End of HCAL_ENDCAP
+//	   if(pfCluster->layer() == PFLayer::HCAL_BARREL1){
+//	     PFRecHBHF += pfRecHits->energy()/cosh(Eta);
+//	     PFRecHBHF_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
+//	     PFRecHBHF_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);
+//	   }//End of HCAL_BARREL and HF
+//	   if(pfCluster->layer() == PFLayer::ECAL_BARREL){
+//             PFRecEB += pfRecHits->energy()/cosh(Eta);
+//             PFRecEB_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
+//             PFRecEB_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);
+//	   }//End of ECAL_BARREL
+//           if(pfCluster->layer() == PFLayer::ECAL_BARREL){
+//             PFRecEE += pfRecHits->energy()/cosh(Eta);
+//             PFRecEE_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
+//             PFRecEE_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);
+//           }//End of ECAL_ENDCAP
+
          }//End loop over PFRechits or PFCluster Loop (6)
        }  //Loop over PFBlockElements
      }  //Loop over PFBlock
      for(unsigned int i=0; i<11; i++){
        for(unsigned int j=0; j<72; j++){
          for(unsigned int k=0; k<7; k++){
-	   //std::cout<<PFRec[i][j][k]<<std::endl;
-	   if(abs(dz1)<0.1){file<<1<<" "<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;}
-	   else{file<<2<<" "<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;}
+	   //std::cout<<26-i<<"  "<<k+1<<"  "<<j+1<<"      outside of loop: "<<PFRec[i][j][k]<<std::endl;
+	   if(abs(dz1)<0.1){totxt<<1<<" "<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;}
+	   else{totxt<<2<<" "<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;}
+	   file<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;
          }
        }
      }
+     //PFRec_Ex = PFRecHBHF_Ex + PFRecHE_Ex + PFRecEB_Ex + PFRecEE_Ex;
+     //PFRec_Ey = PFRecHBHF_Ey + PFRecHE_Ey + PFRecEB_Ey + PFRecEE_Ey;
+     //PFRecMET = sqrt(PFRec_Ex * PFRec_Ex + PFRec_Ey * PFRec_Ey);
    }  //Loop over PFCandidate
    file.close();
+   totxt.close();
    std::cout<<"true repetation is: "<<f<<"  false repetation is: "<<g<<std::endl;
 
    edm::ESHandle<HcalTrigTowerGeometry> tpd_geo_h;
@@ -636,11 +698,39 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
       return level <= max_severity_;
    };
 
+   //==================================RecHit MET Computation ==================================
+   std::ofstream myfile;//to get the result of the big file and make ntuples
+   myfile.open("jetht3_9.txt");
+   double EE_Ex, EE_Ey, EB_Ex, EB_Ey = 0;
+   double HF_Ex, HF_Ey, HBE_Ex, HBE_Ey = 0 ;
+
+   //============Computing HE Rechit Depth Segmentation Using Method Zero and MAHI ==================================
+
+   Handle<HBHERecHitCollection> hRecHits;
+   event.getByToken(hRhToken, hRecHits);
+
+   //==================================Computing Rechit in HBHE ==================================
+
+   double RHE_depth_[7];
+   double RH_Dp_tot = 0;
+   int nrhbe = 0;
+
    if (hits.isValid()) {
       for (auto& hit: *(hits.product())) {
          HcalDetId id(hit.id());
-         if (not isValid(hit))
-            continue;
+         if (not isValid(hit)) continue;
+	 unsigned int depthHE = id.depth();
+         RHE_depth_[depthHE] = hit.energy() / get_cosh(id);
+         RH_Dp_tot += hit.energy() / get_cosh(id);
+
+         //==================================  Rechit MET in HBHE  ==================================
+         if(RHE_depth_[depthHE]>0){
+           double phi_HBHE = id.iphi()*5*M_PI/180;
+           HBE_Ex += hit.energy() / get_cosh(id) * cos(phi_HBHE) ;
+           HBE_Ey += hit.energy() / get_cosh(id) * sin(phi_HBHE) ;
+         }
+         myfile<<1<<"  "<<HBE_Ex<<"   "<<HBE_Ey<<std::endl;
+
          ev_rh_energy0_ += hit.eraw() / get_cosh(id);
          ev_rh_energy2_ += hit.energy() / get_cosh(id);
          ev_rh_energy3_ += hit.eaux() / get_cosh(id);
@@ -650,25 +740,89 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
             tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1);
             rhits[tower_id].push_back(hit);
          }
+	 nrhbe++;
       }
    }
 
+   //==================================  Computing Rechit in HF ==================================
+    
    if (hfhits.isValid()) {
       for (auto& hit: *(hfhits.product())) {
          HcalDetId id(hit.id());
-         if (not isValid(hit))
-            continue;
+         if (not isValid(hit)) continue;
          ev_rh_energy0_ += hit.energy() / get_cosh(id);
          ev_rh_energy2_ += hit.energy() / get_cosh(id);
          ev_rh_energy3_ += hit.energy() / get_cosh(id);
 
+         double RechitEt_M2_hf = hit.energy()/get_cosh(id);
+         double phi_HF = id.iphi()*5*M_PI/180;
+         HF_Ex += RechitEt_M2_hf * cos(phi_HF) ;
+         HF_Ey += RechitEt_M2_hf * sin(phi_HF) ;
          auto tower_ids = tpd_geo.towerIds(id);
          for (auto& tower_id: tower_ids) {
             tower_id = HcalTrigTowerDetId(tower_id.ieta(), tower_id.iphi(), 1, tower_id.version());
             fhits[tower_id].push_back(hit);
          }
       }
+   myfile<<2<<"  "<<HF_Ex<<"  "<<HF_Ey<<std::endl;
    }
+
+     edm::Handle<EcalRecHitCollection> ecalhits;
+
+     if (!event.getByToken(tok_EB_, ecalhits)) {
+       edm::LogError("HcalCompareLegacyChains") <<
+         "Can't find rec hit collection" << std::endl;
+        /* return; */
+     }
+   //==================================  Computing Rechit in Ecal Barrel ==================================
+   edm::Handle<EcalRecHitCollection> ecalEB;
+   event.getByToken(tok_EB_,ecalEB);
+   edm::ESHandle<CaloGeometry> EcalBarrelGeometry_;
+   setup.get<CaloGeometryRecord>().get(EcalBarrelGeometry_);
+   const CaloGeometry* geo_ecalb = EcalBarrelGeometry_.product();
+
+   if (ecalhits.isValid()) {
+     for (EcalRecHitCollection::const_iterator eItr=ecalEB->begin(); eItr!=ecalEB->end(); eItr++)  {
+       const GlobalPoint& pos = geo_ecalb->getPosition(eItr->detid());
+       double phihit = pos.phi();
+       double etahit = pos.eta();
+       double RechitEt_M2_eb = eItr->energy()/cosh(etahit);
+       EB_Ex += RechitEt_M2_eb * cos(phihit) ;
+       EB_Ey += RechitEt_M2_eb * sin(phihit) ;
+     }
+     myfile<<3<<"  "<<EB_Ex<<"  "<<EB_Ey<<std::endl;
+   }
+
+   //================================== Computing Rechit in Ecal Endcap ==================================
+   edm::Handle<EcalRecHitCollection> ecalEE;
+   event.getByToken(tok_EE_,ecalEE);
+   edm::ESHandle<CaloGeometry> EcalEndcapGeometry_;
+   setup.get<CaloGeometryRecord>().get(EcalEndcapGeometry_);
+   const CaloGeometry* geo_ecale = EcalEndcapGeometry_.product();
+
+   if (ecalhits.isValid()) {
+         for (EcalRecHitCollection::const_iterator eItr=ecalEE->begin(); eItr!=ecalEE->end(); eItr++)  {
+           const GlobalPoint& pos = geo_ecale->getPosition(eItr->detid());
+           double phihit = pos.phi();
+           double etahit = pos.eta();
+           double RechitEt_M2_ee = eItr->energy()/cosh(etahit);
+           EE_Ex += RechitEt_M2_ee * cos(phihit) ;
+           EE_Ey += RechitEt_M2_ee * sin(phihit) ;
+         }
+   myfile<<4<<"  "<<EE_Ex<<"  "<<EE_Ey<<std::endl;
+   }
+
+   // ================================== MET Computation ==================================
+   double Ex = HBE_Ex + HF_Ex + EB_Ex + EE_Ex;
+   double Ey = HBE_Ey + HF_Ey + EB_Ey + EE_Ey;
+
+   double RecMET = sqrt(Ex*Ex+Ey*Ey);
+
+   h_RecMET->Fill(RecMET);
+   myfile<<10<<"  "<<Ex<<"  "<<Ey<<"  "<<RecMET<<std::endl;
+   myfile<<100<<"  "<<HBE_Ex<<"  "<<HF_Ex<<"  "<<EB_Ex<<"  "<<EE_Ex<<std::endl;
+   myfile<<200<<"  "<<HBE_Ey<<"  "<<HF_Ey<<"  "<<EB_Ey<<"  "<<EE_Ey<<std::endl;
+   //myfile.close();
 
    // ESHandle<L1CaloHcalScale> hcal_scale;
    // setup.get<L1CaloHcalScaleRcd>().get(hcal_scale);
@@ -755,7 +909,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    for (const auto& pair: rhits) {
       ev_rh_unmatched_ += pair.second.size();
    }
-
+   myfile.close();
    events_->Fill();
 }
 
