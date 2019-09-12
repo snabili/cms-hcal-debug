@@ -449,22 +449,17 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    double Eta = 0.0;
    double Phi = 0.0;
    unsigned int ieta = 0;
-   //unsigned int iphi_ee = 0;
-   //unsigned int iphi_eb = 0;
-   //unsigned int iphi_hbhf = 0;
    unsigned int iphi_he = 0;
    unsigned int f = 0;
    unsigned int g = 0;
    unsigned int n = 0;
+   /*int iEta[n] = {0};
+   int iPhi[n] = {0};
+   int Depth[n] = {0};*/
    std::vector<unsigned int> Geometry;
    std::vector<double> PFRecHit;
    std::vector<double> etaphi;
-
-   //double PFRecHBHF, PFRecEE, PFRecEB = 0;
-   //double PFRecHE_Ex, PFRecHBHF_Ex, PFRecEB_Ex, PFRecEE_Ex = 0;
-  // double PFRecHE_Ey, PFRecHBHF_Ey, PFRecEB_Ey, PFRecEE_Ey = 0;
-   //double PFRec_Ex, PFRec_Ey = 0;
-
+   double PFRec[11][72][7] = {};
 
    //================ PFRecHits from PFCandidates->PFBlocks->PFClusters->PFRecHitFractions =============================================
    //Process:	1-Loop over all Charged Hadrons PFCandidates. const_iterator ci later pointed to pfc
@@ -475,14 +470,15 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    //		6-Loop over Hits within the PFCluster
    //================================================================================================================================================	
 
+   std::cout<<"THIS IS A NEW EVENT"<<std::endl;
+
    edm::Handle<reco::PFCandidateCollection> pfCandidate;
    event.getByToken(inputTagPFCandidates_, pfCandidate);
    std::ofstream file;//to get the result of the big file and make ntuples
-   file.open("jetht1_9.txt");
+   file.open("jetht1_3.txt");
    std::ofstream totxt;//to get the result of the big file and make ntuples
-   totxt.open("jetht2_9.txt");
+   totxt.open("x_1.txt");
    double posX,posY,posZ = 0;//Geometry Info.
-   //double PFRec[11][72][7] = {};
    for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop (1)
      const reco::PFCandidate& pfc = *ci;//(1)
      if ( pfc.particleId() != 1 ) continue;// Charged Hadron Particles (1)
@@ -493,8 +489,10 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
      if(fabs(dz1)<0.2){h_CHPVMPF_HS->Fill(dz1);}
      else{h_CHPVMPF_PU->Fill(dz1);}
      const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();//returns elements in the block associated with the PFCandidate (2)
-     double PFRec[11][72][7] = {};
-     //double PFRecHit = 0;
+     //double PFRec[11][72][7] = {};
+     //std::vector<unsigned int> Geometry;
+     //std::vector<double> PFRecHit;
+     std::cout<<"here the pfcandidate loop starts"<<std::endl;
      //n = 0;
      for ( reco::PFCandidate::ElementsInBlocks::const_iterator Elements = theElements.begin(); Elements != theElements.end(); ++Elements ) {//Elements in block associated with PFCandidate (3)
        //=== to cout the elements in the block:(https://github.com/cms-sw/cmssw/blob/CMSSW_10_1_X/RecoParticleFlow/Configuration/test/PFChargedHadronAnalyzer.cc#L188-L193) =========
@@ -504,6 +502,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
        for(unsigned iEle=0; iEle<elements.size(); iEle++) {//to check type of elements in blockRef: Track, PS1, PS2 ...
          std::cout<<"PFElementsInBlocks are: "<<elements[iEle].type()<<std::endl;
        }*/
+	std::cout<<"here the element in block loop starts"<<std::endl;
        //================================================
        const edm::OwnVector<reco::PFBlockElement>& PFBlockRef = Elements->first->elements();
        for ( edm::OwnVector<reco::PFBlockElement>::const_iterator blockComponent = PFBlockRef.begin(); blockComponent != PFBlockRef.end(); ++blockComponent ) {//Loop over block components such as Track, PS1, PS2 ... (4)
@@ -512,10 +511,10 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 	 if (pfCluster->layer() != PFLayer::HCAL_ENDCAP) continue;
 	 //if((pfCluster->layer() != PFLayer::HCAL_ENDCAP) || (pfCluster->layer() != PFLayer::HCAL_BARREL1) || (pfCluster->layer() != PFLayer::ECAL_BARREL) || (pfCluster->layer() != PFLayer::ECAL_ENDCAP) || (pfCluster->layer() == PFLayer::HF_HAD) || (pfCluster->layer() == PFLayer::HF_EM)) continue;
          const std::vector<reco::PFRecHitFraction>& pfRecHitFractions = pfCluster->recHitFractions();
-	 n = 0;
 
          for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop (6)
 	   bool repetetive = false;
+           //bool repetetive1 = false;
 
            const reco::PFRecHitRef& pfRecHits = it->recHitRef();
            DetId idseed;//reference from:     https://github.com/cms-sw/cmssw/blob/master/RecoParticleFlow/PFClusterTools/src/PFPhotonClusters.cc#L27
@@ -526,86 +525,65 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
            math::XYZPoint pflowPos(posX,posY,posZ);
            Eta    = pflowPos.eta();
            Phi    = pflowPos.phi();
-	   //if (pfCluster->layer() == PFLayer::HCAL_ENDCAP){
-             HcalDetId HEidSeed = HcalDetId(idseed.rawId());
-             iphi_he = HEidSeed.iphi();
-	     double PFRecHit_Et = pfRecHits->energy()/cosh(Eta);
-	     unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
-	       //ieta definition
-	     if(1.305<=Eta || Eta<=2.500){//Restricting the area between 1.305<=|Eta|<=2.500 tracker region
-	       if(2.322<=Eta && Eta<=2.500){ieta = 1;}//ieta == 26
-	       if(2.172<=Eta && Eta<=2.322){ieta = 2;}//ieta == 25
-	       if(2.043<=Eta && Eta<=2.172){ieta = 3;}//ieta == 24
-	       if(1.930<=Eta && Eta<=2.043){ieta = 4;}//ieta == 23
-	       if(1.830<=Eta && Eta<=1.930){ieta = 5;}//ieta == 22
-	       if(1.740<=Eta && Eta<=1.830){ieta = 6;}//ieta == 21
-	       if(1.653<=Eta && Eta<=1.740){ieta = 7;}//ieta == 20
-	       if(1.566<=Eta && Eta<=1.653){ieta = 8;}//ieta == 19
-	       if(1.479<=Eta && Eta<=1.566){ieta = 9;}//ieta == 18
-	       if(1.392<=Eta && Eta<=1.479){ieta = 10;}//ieta == 17
-	       if(1.305<=Eta && Eta<=1.392){ieta = 11;}//ieta == 16
+           HcalDetId HEidSeed = HcalDetId(idseed.rawId());
+           iphi_he = HEidSeed.iphi();
+	   double PFRecHit_Et = pfRecHits->energy()/cosh(Eta);
+	   unsigned int depth = pfRecHits->depth();// from depth =1 to depth =7
+	     //ieta definition
+	   if(1.305<=Eta && Eta<=2.500){//Restricting the area between 1.305<=|Eta|<=2.500 tracker region
+	     if(2.322<=Eta && Eta<=2.500){ieta = 1;}//ieta == 26
+	     if(2.172<=Eta && Eta<=2.322){ieta = 2;}//ieta == 25
+	     if(2.043<=Eta && Eta<=2.172){ieta = 3;}//ieta == 24
+	     if(1.930<=Eta && Eta<=2.043){ieta = 4;}//ieta == 23
+	     if(1.830<=Eta && Eta<=1.930){ieta = 5;}//ieta == 22
+	     if(1.740<=Eta && Eta<=1.830){ieta = 6;}//ieta == 21
+	     if(1.653<=Eta && Eta<=1.740){ieta = 7;}//ieta == 20
+	     if(1.566<=Eta && Eta<=1.653){ieta = 8;}//ieta == 19
+	     if(1.479<=Eta && Eta<=1.566){ieta = 9;}//ieta == 18
+	     if(1.392<=Eta && Eta<=1.479){ieta = 10;}//ieta == 17
+	     if(1.305<=Eta && Eta<=1.392){ieta = 11;}//ieta == 16
+	     //std::cout<<"ieta:  "<<ieta<<"  iphi: "<<iphi_he<<" depth: "<<depth<<" PFRecHit: "<<PFRecHit_Et<<std::endl;
+	     /*Geometry.push_back(iphi_he);//(3*n)th element is iphi
+             Geometry.push_back(ieta);//(3*n+1)th element is ieta
+             Geometry.push_back(depth);//(3*n+2)th element is depth*/
+             PFRecHit.push_back(pfRecHits->energy()/cosh(Eta));
+             etaphi.push_back(Eta);//the (2*n)th element is eta 
+             etaphi.push_back(Phi);//(2*n+1)th element is phi
+	     /*iEta[n] = ieta;
+             iPhi[n] = iphi_he;
+             Depth[n] = depth;
+	     n++;*/
+             /*for(unsigned int i(0); i<n-1; i++){
+               if(iphi_he == iPhi[i] && ieta == iEta[i] && depth == Depth[i]){repetetive1 = true;}
+	     }*/
 
-	       Geometry.push_back(iphi_he);//(3*n)th element is iphi
-               Geometry.push_back(ieta);//(3*n+1)th element is ieta
-               Geometry.push_back(depth);//(3*n+2)th element is depth
-               PFRecHit.push_back(pfRecHits->energy()/cosh(Eta));
-               etaphi.push_back(Eta);//the (2*n)th element is eta 
-               etaphi.push_back(Phi);//(2*n+1)th element is phi
-               for(unsigned int i(0); i<n; i++){
-                 if(iphi_he == Geometry[3*i] && ieta == Geometry[3*i+1] && depth == Geometry[3*i+2] && PFRecHit_Et == PFRecHit[i]){
-	           repetetive = true;
-	           f++;
-	         }
-	         if(repetetive == true) break;
-               }
-               if(repetetive == true) continue;
-               g++;
-               for(unsigned int i=1; i<12; i++){
-                 for(unsigned int j=1; j<73; j++){
-	           for(unsigned int k=1; k<8; k++){
-	             if(ieta==i && iphi_he==j && depth==k){PFRec[i-1][j-1][k-1] += pfRecHits->energy()/cosh(Eta);}
-	           }
-	         }	 
+
+             for(unsigned int i(0); i<(Geometry.size()/3-1); i++){
+               if(iphi_he == Geometry[3*i] && ieta == Geometry[3*i+1] && depth == Geometry[3*i+2] && PFRecHit[i] != 0.00000){
+	         repetetive = true;
+	         f++;
 	       }
-	       n++;
-	       //PFRecHit +=pfRecHits->energy()/cosh(Eta);
-	      }
-//	     }else{//PFRecHE = pfRecHits->energy()/cosh(Eta);
-//	        PFRecHE_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
-//                PFRecHE_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);}
-//           }//End of HCAL_ENDCAP
-//	   if(pfCluster->layer() == PFLayer::HCAL_BARREL1){
-//	     PFRecHBHF += pfRecHits->energy()/cosh(Eta);
-//	     PFRecHBHF_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
-//	     PFRecHBHF_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);
-//	   }//End of HCAL_BARREL and HF
-//	   if(pfCluster->layer() == PFLayer::ECAL_BARREL){
-//             PFRecEB += pfRecHits->energy()/cosh(Eta);
-//             PFRecEB_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
-//             PFRecEB_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);
-//	   }//End of ECAL_BARREL
-//           if(pfCluster->layer() == PFLayer::ECAL_BARREL){
-//             PFRecEE += pfRecHits->energy()/cosh(Eta);
-//             PFRecEE_Ex +=pfRecHits->energy()/cosh(Eta)*cos(Phi);
-//             PFRecEE_Ey +=pfRecHits->energy()/cosh(Eta)*sin(Phi);
-//           }//End of ECAL_ENDCAP
-
+	       if(repetetive == true) break;
+             }
+	     //std::cout<<" repetetive is: "<<repetetive<<std::endl;
+             if(repetetive == false){
+               g++;
+ 	       //PFRec[ieta-1][iphi_he-1][depth-1] += pfRecHits->energy()/cosh(Eta);
+ 	       PFRec[ieta-1][iphi_he-1][depth-1] += PFRecHit_Et;
+	     }
+	   }
          }//End loop over PFRechits or PFCluster Loop (6)
        }  //Loop over PFBlockElements
      }  //Loop over PFBlock
      for(unsigned int i=0; i<11; i++){
        for(unsigned int j=0; j<72; j++){
          for(unsigned int k=0; k<7; k++){
-	   //std::cout<<26-i<<"  "<<k+1<<"  "<<j+1<<"      outside of loop: "<<PFRec[i][j][k]<<std::endl;
 	   if(abs(dz1)<0.1){totxt<<1<<" "<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;}
 	   else{totxt<<2<<" "<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;}
 	   file<<26-i<<" "<<k+1<<" "<<j+1<<" "<<PFRec[i][j][k]<<"  "<<dz1<<std::endl;
          }
        }
      }
-     //PFRec_Ex = PFRecHBHF_Ex + PFRecHE_Ex + PFRecEB_Ex + PFRecEE_Ex;
-     //PFRec_Ey = PFRecHBHF_Ey + PFRecHE_Ey + PFRecEB_Ey + PFRecEE_Ey;
-     //PFRecMET = sqrt(PFRec_Ex * PFRec_Ex + PFRec_Ey * PFRec_Ey);
    }  //Loop over PFCandidate
    file.close();
    totxt.close();
@@ -700,7 +678,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    //==================================RecHit MET Computation ==================================
    std::ofstream myfile;//to get the result of the big file and make ntuples
-   myfile.open("jetht3_9.txt");
+   myfile.open("jetht3_3.txt");
    double EE_Ex, EE_Ey, EB_Ex, EB_Ey = 0;
    double HF_Ex, HF_Ey, HBE_Ex, HBE_Ey = 0 ;
 
