@@ -114,6 +114,7 @@ def compare_tp_reco(process, name, tag_tp, tag_df, sev):
                                           swapIphi=cms.bool(False),
                                           sumToken =  cms.untracked.InputTag("caloStage2Digis","EtSum"),
 					  metToken =  cms.untracked.InputTag("pfMet"),
+					  jetToken =  cms.untracked.InputTag("ak4PFJetsCHS"),
 					  caloMetToken =  cms.untracked.InputTag("caloMet"),
 					  caloMetBEToken = cms.untracked.InputTag("caloMetBE"),
                                           maxSeverity=cms.int32(sev),
