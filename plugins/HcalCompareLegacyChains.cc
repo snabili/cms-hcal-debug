@@ -194,6 +194,7 @@ class HcalCompareLegacyChains : public edm::EDAnalyzer {
       TH1D *h_pfjet;
       TH1D *h_pfcandz;
       TH1D *h_leadPVz;
+      TH1D *h_leadingPVz;
       TH2D *h_pfjet_eta;
 
       //====== 2D Histo Declaration =========
@@ -384,21 +385,21 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
 
 
    //====Depth Study=================================================================================
-   h_PFRec_PU_D1 = fs->make<TH1D>("h_PFRec_PU_D1","",100,0,5);
-   h_PFRec_PU_D2 = fs->make<TH1D>("h_PFRec_PU_D2","",100,0,5);
-   h_PFRec_PU_D3 = fs->make<TH1D>("h_PFRec_PU_D3","",100,0,5);
-   h_PFRec_PU_D4 = fs->make<TH1D>("h_PFRec_PU_D4","",100,0,5);
-   h_PFRec_PU_D5 = fs->make<TH1D>("h_PFRec_PU_D5","",100,0,5);
-   h_PFRec_PU_D6 = fs->make<TH1D>("h_PFRec_PU_D6","",100,0,5);
-   h_PFRec_PU_D7 = fs->make<TH1D>("h_PFRec_PU_D7","",100,0,5);
+   h_PFRec_PU_D1 = fs->make<TH1D>("h_PFRec_PU_D1","",100,0.2,10);
+   h_PFRec_PU_D2 = fs->make<TH1D>("h_PFRec_PU_D2","",100,0.2,10);
+   h_PFRec_PU_D3 = fs->make<TH1D>("h_PFRec_PU_D3","",100,0.2,10);
+   h_PFRec_PU_D4 = fs->make<TH1D>("h_PFRec_PU_D4","",100,0.2,10);
+   h_PFRec_PU_D5 = fs->make<TH1D>("h_PFRec_PU_D5","",100,0.2,10);
+   h_PFRec_PU_D6 = fs->make<TH1D>("h_PFRec_PU_D6","",100,0.2,10);
+   h_PFRec_PU_D7 = fs->make<TH1D>("h_PFRec_PU_D7","",100,0.2,10);
 
-   h_PFRec_HS_D1 = fs->make<TH1D>("h_PFRec_HS_D1","",100,0,5);
-   h_PFRec_HS_D2 = fs->make<TH1D>("h_PFRec_HS_D2","",100,0,5);
-   h_PFRec_HS_D3 = fs->make<TH1D>("h_PFRec_HS_D3","",100,0,5);
-   h_PFRec_HS_D4 = fs->make<TH1D>("h_PFRec_HS_D4","",100,0,5);
-   h_PFRec_HS_D5 = fs->make<TH1D>("h_PFRec_HS_D5","",100,0,5);
-   h_PFRec_HS_D6 = fs->make<TH1D>("h_PFRec_HS_D6","",100,0,5);
-   h_PFRec_HS_D7 = fs->make<TH1D>("h_PFRec_HS_D7","",100,0,5);
+   h_PFRec_HS_D1 = fs->make<TH1D>("h_PFRec_HS_D1","",100,0.2,10);
+   h_PFRec_HS_D2 = fs->make<TH1D>("h_PFRec_HS_D2","",100,0.2,10);
+   h_PFRec_HS_D3 = fs->make<TH1D>("h_PFRec_HS_D3","",100,0.2,10);
+   h_PFRec_HS_D4 = fs->make<TH1D>("h_PFRec_HS_D4","",100,0.2,10);
+   h_PFRec_HS_D5 = fs->make<TH1D>("h_PFRec_HS_D5","",100,0.2,10);
+   h_PFRec_HS_D6 = fs->make<TH1D>("h_PFRec_HS_D6","",100,0.2,10);
+   h_PFRec_HS_D7 = fs->make<TH1D>("h_PFRec_HS_D7","",100,0.2,10);
 
 
 
@@ -411,6 +412,7 @@ HcalCompareLegacyChains::HcalCompareLegacyChains(const edm::ParameterSet& config
    h_pfcandz  = fs->make<TH1D>("h_pfcanz","",100,-10,10);
    
    h_leadPVz = fs->make<TH1D>("h_leadPVz","",100,-10,10);
+   h_leadingPVz = fs->make<TH1D>("h_leadPVz","",100,-10,10);
    h_pfjet_eta = fs->make<TH2D>("h_pfjet_eta","",100,-6,6,100,0,250);
 
 }
@@ -440,28 +442,36 @@ void
 HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
 
-   ievt++;
-   std::cout<<"Event number: "<<ievt<<" started"<<std::endl;
-
    //============PFJet ===================================================================== 
    edm::Handle<reco::PFJetCollection> pfjetH;
+   edm::Handle<reco::PFJetCollection> selectedJets_;
    event.getByToken(jetToken_, pfjetH);
+   selectedJets_ = pfjetH;
    double ptjetmax = 0;
    double ptjetmaxtot = 0;
-   for ( reco::PFJetCollection::const_iterator jet = pfjetH->begin(); jet != pfjetH->end(); jet++ ) {
+   //double ptjetmax_eta = 0;
+   //double ptjetmax_etatot = 0;
+   for ( reco::PFJetCollection::const_iterator jet = selectedJets_->begin(); jet != selectedJets_->end(); jet++ ) {
         double jeteta = jet->eta();
 	double jetpt = jet->pt();
 	if(1.305<=fabs(jeteta) && fabs(jeteta)<=2.500){//HE area covered by tracker
-		h_pfjet->Fill(jetpt);
-		if (ptjetmax < jetpt){ptjetmax = jetpt;}//maximum value of pfjetpt in HE
-		h_pfjet_eta->Fill(jeteta,jetpt);
+		h_pfjet->Fill(jet->pt());
+		if (ptjetmax < jet->pt()){ptjetmax = jet->pt();}//maximum value of pfjetpt in HE
+		//if(jet->pt() == ptjetmax){ptjetmax_eta = jeteta;}//to check that the pfjet leading are within HE eta region
+		h_pfjet_eta->Fill(jeteta,jet->pt());
 	}
-	if (ptjetmaxtot < jetpt){ptjetmaxtot = jetpt;}//pfjetmax in the entire HCAL
+	if (ptjetmaxtot < jet->pt()){ptjetmaxtot = jet->pt();}//pfjetmax in the entire HCAL
+	//if(jet->pt() == ptjetmaxtot){ptjetmax_etatot = jeteta;}
 	
    }
-   bool ptjm = false;// boolean to use in the PFRechit loop
+   bool ptjm = false;
+   //std::cout<<"in HE max pt is:  "<<ptjetmax<<"  and eta is:  "<<ptjetmax_eta<<std::endl;
+   //std::cout<<"in HCAL max pt is:  "<<ptjetmaxtot<<"  and eta is:  "<<ptjetmax_etatot<<std::endl;
    if(ptjetmax < ptjetmaxtot){ptjm = true;}//to filter out events that have maximum pfjet_pt outside HE region covered by the tracker
   
+   ievt++;
+   //std::cout<<"Event number: "<<ievt<<" started"<<std::endl;
+
    //============Offline PFMET ===================================================================== 
    edm::Handle<reco::PFMETCollection> metLabel_;
    event.getByToken(metToken_, metLabel_);
@@ -474,6 +484,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
 
    //============Online MET =====================================================================
    double L1MET = 0;
+   //double L1SumEt = 0;
    edm::Handle<l1t::EtSumBxCollection> sums;
    event.getByToken(sumToken_, sums);
    if(sums.isValid()){
@@ -481,7 +492,9 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
        for (l1t::EtSumBxCollection::const_iterator it=sums->begin(ibx); it!=sums->end(ibx); it++) {
          int type = static_cast<int>( it->getType() );
          if (type == 8 && ibx ==0){L1MET = it->et(); h_L1MET->Fill(L1MET);}
+         //if (type == 2 && ibx ==0){double L1MET_HBE = it->et();}
          if (type == 0 && ibx ==0){h_L1SumEt->Fill(it->et());
+	   //L1SumEt = it->et();
 	 }
        }
      }
@@ -498,6 +511,16 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    h_leadPVz->Fill(leadPV.z());
 
 
+   /*double VertexHigherPtSquared::sumPtSquared(const reco::Vertex & v)  {
+     double sum = 0.;
+     double pT;
+     for (auto ipv = PVs->begin(); ipv != PVs->end(); ++ipv) {
+       pT = (*ipv).pt();
+       sum += pT*pT;
+     }
+     return sum;
+  }*/
+
 
    //================ Leading Primary Vertex Position ============================================
    double sumPtSquared(const reco::Vertex&);
@@ -506,6 +529,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    int pv_indexInColl = -1, pv_index = 0;
    VertexHigherPtSquared vertexPt2Calculator;
    for (auto ipv = PVs->begin(); ipv != PVs->end(); ++ipv) {
+      //double pt2sum = sumPtSquared(*ipv);
       double pt2sum = vertexPt2Calculator.sumPtSquared(*ipv);
       if (pt2sum >= pt2sumMax) {
         pt2sumMax = pt2sum;
@@ -520,12 +544,18 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    if (!PVs->empty() && !((*PVs)[0].isFake())) {//Offline Primary Vertices
      leadingPV = math::XYZPoint(primary_vertex_[0].x(), primary_vertex_[0].y(), primary_vertex_[0].z());
    }
+   h_leadingPVz->Fill(leadingPV.z());
+
 
 
    double Eta = 0.0;
+   //double Phi = 0.0;
    unsigned int ieta = 0;
    unsigned int iphi_he = 0;
+   unsigned ieta_he = 0;
    unsigned int depth = 0;
+   unsigned int f = 0;
+   unsigned int g = 0;
    unsigned int pfcandidate = 0;
    std::vector<unsigned int> Geometry;
    std::vector<double> PFRecHit;
@@ -545,13 +575,17 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
    edm::Handle<reco::PFCandidateCollection> pfCandidate;
    event.getByToken(inputTagPFCandidates_, pfCandidate);
    std::ofstream file;//to get the result of the big file and make ntuples
-   file.open("file.txt");
+   file.open("file_4.txt");
    double posX,posY,posZ = 0;//Geometry Info.
  
-   for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop (1) [PFCandidates are the list of particle PF algorithm produces]
+   //for ( reco::PFJetCollection::const_iterator jet = selectedJets_->begin(); jet != selectedJets_->end(); jet++ ) {
+     //if(fabs(jet->eta()) < 1.305 && fabs(jet->eta()) > 2.500 && jet->pt()<100) continue;
+     
+     for( reco::PFCandidateCollection::const_iterator ci  = pfCandidate->begin(); ci!=pfCandidate->end(); ++ci)  { //PFCandidate Loop (1) [PFCandidates are the list of particle PF algorithm produces]
        const reco::PFCandidate& pfc = *ci;//(1)G
        if ( pfc.particleId() != 1 && ptjm == true) continue;// Charged Hadron Particles (1)
        //if(fabs(pfc.eta())<1.305 || 2.500<fabs(pfc.eta())) continue;
+       PFRec[11][72][7] = {};
        math::XYZPoint vtx = pfc.vertex();//PFCandidate Vertices  
        double dz1 = vtx.z()-leadPV.z();//Cut on Hard Scatter and Pileup
        h_pfcandz->Fill(vtx.z());
@@ -561,6 +595,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
        pfcandidate++;//number of PFCandidates charged hadron particles
        const PFCandidate::ElementsInBlocks& theElements = pfc.elementsInBlocks();//returns elements in the block associated with the PFCandidate (2)
        for ( reco::PFCandidate::ElementsInBlocks::const_iterator Elements = theElements.begin(); Elements != theElements.end(); ++Elements ) {//Elements in block associated with PFCandidate (3)
+          //std::cout<<"here the element in block loop starts"<<std::endl;
          const edm::OwnVector<reco::PFBlockElement>& PFBlockRef = Elements->first->elements();
          for ( edm::OwnVector<reco::PFBlockElement>::const_iterator blockComponent = PFBlockRef.begin(); blockComponent != PFBlockRef.end(); ++blockComponent ) {//Loop over block components such as Track, PS1, PS2 ... (4)
            if ( blockComponent->clusterRef().isNull()) continue;//If clusters refenced to pfBlockelement is not empty
@@ -568,6 +603,7 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
            if (pfCluster->layer() != PFLayer::HCAL_ENDCAP) continue;
            const std::vector<reco::PFRecHitFraction>& pfRecHitFractions = pfCluster->recHitFractions();
            for ( std::vector<reco::PFRecHitFraction>::const_iterator it = pfRecHitFractions.begin(); it != pfRecHitFractions.end(); ++it ) {//PFCluster Loop (6)
+             //file.open("file_4.txt");
              bool repetetive = false;
              const reco::PFRecHitRef& pfRecHits = it->recHitRef();
              DetId idseed;//reference from:     https://github.com/cms-sw/cmssw/blob/master/RecoParticleFlow/PFClusterTools/src/PFPhotonClusters.cc#L27
@@ -577,14 +613,16 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
              posZ = pfRecHits->position().z();
              math::XYZPoint pflowPos(posX,posY,posZ);
              Eta    = pflowPos.eta();
+             //Phi    = pflowPos.phi();
              HcalDetId HEidSeed = HcalDetId(idseed.rawId());
              iphi_he = HEidSeed.iphi();
+	     ieta_he = HEidSeed.ieta();
              double PFRecHit_Et = pfRecHits->energy()/cosh(Eta);
              double PFRecHit_Pt = pfc.pt()/cosh(Eta);
              depth = pfRecHits->depth();// from depth =1 to depth =7
                //ieta definition
              if(1.305<=Eta && Eta<=2.500){//Restricting the area between 1.305<=|Eta|<=2.500 tracker region
-               if(2.322<Eta && Eta<=2.500){ieta = 1;}//ieta == 26
+               /*if(2.322<Eta && Eta<=2.500){ieta = 1;}//ieta == 26
                if(2.172<Eta && Eta<=2.322){ieta = 2;}//ieta == 25
                if(2.043<Eta && Eta<=2.172){ieta = 3;}//ieta == 24
                if(1.930<Eta && Eta<=2.043){ieta = 4;}//ieta == 23
@@ -594,24 +632,31 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
                if(1.566<Eta && Eta<=1.653){ieta = 8;}//ieta == 19
                if(1.479<Eta && Eta<=1.566){ieta = 9;}//ieta == 18
                if(1.392<Eta && Eta<=1.479){ieta = 10;}//ieta == 17
-               if(1.305<=Eta && Eta<=1.392){ieta = 11;}//ieta == 16
+               if(1.305<=Eta && Eta<=1.392){ieta = 11;}//ieta == 16*/
                Geometry.push_back(iphi_he);//(3*n)th element is iphi
-               Geometry.push_back(ieta);//(3*n+1)th element is ieta
+               Geometry.push_back(ieta_he);//(3*n+1)th element is ieta
                Geometry.push_back(depth);//(3*n+2)th element is depth
                PFRecHit.push_back(pfRecHits->energy()/cosh(Eta));
+                  //std::cout<<"HITS:           	"<<"    	ieta:   "<<ieta<<"   iphi:   "<<iphi_he<<"     	depth:  "<<depth<<std::endl;
                for(unsigned int i(0); i<(Geometry.size()/3-1); i++){
-                 if(iphi_he == Geometry[3*i] && ieta == Geometry[3*i+1] && depth == Geometry[3*i+2]){
+                 //if(iphi_he == Geometry[3*i] && ieta == Geometry[3*i+1] && depth == Geometry[3*i+2]){
+                 if(iphi_he == Geometry[3*i] && ieta_he == Geometry[3*i+1] && depth == Geometry[3*i+2]){
+
                    repetetive = true;
+                   f++;
                  }
                  else{repetetive = false;}
+          	//std::cout<<"GEOMETRY:		"<<"	ieta:	"<<Geometry[3*i+1]<<"	iphi:	"<<Geometry[3*i]<<"	depth:	"<<Geometry[3*i+2]<<std::endl;
 
                  if(repetetive == true) break;
                }
                if(repetetive == false){
-                 PFRec[ieta-1][iphi_he-1][depth-1] += PFRecHit_Et;
-                 PFRec_Pt[ieta-1][iphi_he-1][depth-1] += PFRecHit_Pt;
+                 g++;
+                 PFRec[ieta_he-1][iphi_he-1][depth-1] += PFRecHit_Et;
+                 PFRec_Pt[ieta_he-1][iphi_he-1][depth-1] += PFRecHit_Pt;
+          	//std::cout<<"PFRec:	*******		"<<PFRec[ieta-1][iphi_he-1][depth-1]<<std::endl;
                }
-             }
+             }//end if restriction tracker area region
            }//End loop over PFRechits or PFCluster Loop (6)
          }  //Loop over PFBlockElements
        }  //Loop over PFBlock
@@ -619,16 +664,58 @@ HcalCompareLegacyChains::analyze(const edm::Event& event, const edm::EventSetup&
          for(unsigned int j=0; j<72; j++){
            for(unsigned int k=0; k<7; k++){
                if(fabs(dz1)<0.1 && PFRec[i][j][k] > 1.0 && ptjm == false){// looking at HS hits and events where the leading jets lies within the HE region covered by the tracker
-                 file<<1 <<"	"<<26-i<<"	"<<k+1<<"	"<<j+1<<"	"<<PFRec[i][j][k]<<"	"<<dz1<<"	"<<PFRec_Pt[i][j][k]<<std::endl;
+               //if(fabs(dz1)<0.1 && PFRec[i][j][k] > 0.0){
+                 file<<1 <<"	"<<26-i<<"	"<<k+1<<"	"<<j+1<<"	"<<PFRec[i][j][k]<<"	"<<dz1<<std::endl;
+                 h_PFRec_HS->Fill(PFRec[i][j][k]);
+                 h_PFRec_HS_D1->Fill(PFRec[i][j][0]);
+                 h_PFRec_HS_D2->Fill(PFRec[i][j][1]);
+                 h_PFRec_HS_D3->Fill(PFRec[i][j][2]);
+                 h_PFRec_HS_D4->Fill(PFRec[i][j][3]);
+                 h_PFRec_HS_D5->Fill(PFRec[i][j][4]);
+                 h_PFRec_HS_D6->Fill(PFRec[i][j][5]);
+                 h_PFRec_HS_D7->Fill(PFRec[i][j][6]);
+
+                 HS_D1 = PFRec[i][j][0];
+                 HS_D2 = PFRec[i][j][1];
+                 HS_D3 = PFRec[i][j][2];
+                 HS_D4 = PFRec[i][j][3];
+                 HS_D5 = PFRec[i][j][4];
+                 HS_D6 = PFRec[i][j][5];
+                 HS_D7 = PFRec[i][j][6];
+                 
+                 //std::cout<<1 <<"        "<<26-i<<"      "<<k+1<<"       "<<j+1<<"       "<<PFRec[i][j][k]<<"    "<<dz1<<"	"<<PFRec_Pt[i][j][k]<<std::endl;
                }
-               if(fabs(dz1)>0.1 && PFRec[i][j][k] > 1  && ptjm == false){// looking at PU hits and events where the leading jets lies within the HE region covered by the tracker
+               if(fabs(dz1)>0.1 && PFRec[i][j][k] > 1.0  && ptjm == false){// looking at PU hits and events where the leading jets lies within the HE region covered by the tracker
+               //if(fabs(dz1)>0.1 && PFRec[i][j][k] > 0.0){
                  file<<2 <<"	"<<26-i<<"	"<<k+1<<"	"<<j+1<<"	"<<PFRec[i][j][k]<<"	"<<dz1<<"	"<<PFRec_Pt[i][j][k]<<std::endl;
+                 h_PFRec_PU->Fill(PFRec[i][j][k]);
+                 h_PFRec_PU_D1->Fill(PFRec[i][j][0]);
+                 h_PFRec_PU_D2->Fill(PFRec[i][j][1]);
+                 h_PFRec_PU_D3->Fill(PFRec[i][j][2]);
+                 h_PFRec_PU_D4->Fill(PFRec[i][j][3]);
+                 h_PFRec_PU_D5->Fill(PFRec[i][j][4]);
+                 h_PFRec_PU_D6->Fill(PFRec[i][j][5]);
+                 h_PFRec_PU_D7->Fill(PFRec[i][j][6]);
+
+                 PU_D1 = PFRec[i][j][0];
+                 PU_D2 = PFRec[i][j][1];
+                 PU_D3 = PFRec[i][j][2];
+                 PU_D4 = PFRec[i][j][3];
+                 PU_D5 = PFRec[i][j][4];
+                 PU_D6 = PFRec[i][j][5];
+                 PU_D7 = PFRec[i][j][6];
+
+                 //std::cout<<2 <<"        "<<26-i<<"      "<<k+1<<"       "<<j+1<<"       "<<PFRec[i][j][k]<<"    "<<dz1<<"       "<<PFRec_Pt[i][j][k]<<std::endl;
                }
            }
          }
        }
-   }  //Loop over PFCandidate
+     }  //Loop over PFCandidate
+   //} //Loop over PFJet
+   //std::cout<<"pfcandidate:	"<<pfcandidate<<std::endl;
+   
    file.close();
+   //std::cout<<"true repetation is: "<<f<<"  false repetation is: "<<g<<std::endl;
 
    edm::ESHandle<HcalTrigTowerGeometry> tpd_geo_h;
    setup.get<CaloGeometryRecord>().get(tpd_geo_h);
